@@ -31,11 +31,11 @@ class BM25Search:
             self.index_path.mkdir(parents=True, exist_ok=True)
             self.index = tantivy.Index(self.schema, path=str(self.index_path))
 
-    def add_documents(self, documents: list[dict[str, Any]]) -> None:
-        """Add documents to the BM25 index."""
+    def add_documents(self, documents: list[dict[str, Any]], batch_size: int = 10000) -> None:
+        """Add documents to the BM25 index in batches to avoid writer thread crashes."""
         writer = self.index.writer()
 
-        for document in documents:
+        for i, document in enumerate(documents):
             writer.add_document(
                 tantivy.Document(
                     id=str(document["id"]),
@@ -45,6 +45,13 @@ class BM25Search:
                 )
             )
 
+            # Commit every batch_size documents to prevent memory overflow
+            if (i + 1) % batch_size == 0:
+                writer.commit()
+                writer = self.index.writer()
+                print(f"  Indexed {i + 1:,} documents...")
+
+        # Commit remaining documents
         writer.commit()
         self.index.reload()
 
