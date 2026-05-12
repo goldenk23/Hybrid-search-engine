@@ -8,6 +8,25 @@ This file is responsible for:
 2. Configuring middleware (CORS)
 3. Connecting route files to the app
 4. Defining global/simple endpoints like health checks
+
+USAGE:
+------
+Run the server with:
+    python -m uvicorn src.api.main:app --reload
+
+Available Endpoints:
+
+    1. API Documentation (Interactive Swagger UI):
+       http://127.0.0.1:8000/docs
+
+    2. Health Check:
+       http://127.0.0.1:8000/health
+
+    3. BM25 Search:
+       http://127.0.0.1:8000/search?q=python&top_k=10
+       http://127.0.0.1:8000/search?q=machine%20learning&top_k=20
+
+Once running, open: http://127.0.0.1:8000/docs
 """
 
 # FastAPI is the main framework used to build the backend API
