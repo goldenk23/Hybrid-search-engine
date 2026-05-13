@@ -9,6 +9,7 @@ Pass ``--include-collection`` to also download and extract the full
 from __future__ import annotations
 
 import argparse
+import shutil
 import sys
 import tarfile
 import urllib.request
@@ -23,6 +24,7 @@ COLLECTION_URL = f"{MSMARCO_BASE}/{COLLECTION_ARCHIVE}"
 COLLECTION_FILENAME = "collection.tsv"
 
 DOWNLOADS = {
+    "queries.dev.small.tsv": f"{MSMARCO_BASE}/queries.dev.small.tsv",
     "qrels.train.tsv": f"{MSMARCO_BASE}/qrels.train.tsv",
     "qrels.dev.small.tsv": f"{MSMARCO_BASE}/qrels.dev.small.tsv",
 }
@@ -37,35 +39,52 @@ class DownloadProgressBar(tqdm):
         self.update(blocks * block_size - self.n)
 
 
-def download_file(url: str, output_path: Path) -> bool:
+def download_file(url: str, output_path: Path, force: bool = False) -> bool:
     """Download a file with progress output and basic error handling."""
-    if output_path.exists():
+    if output_path.exists() and not force:
         print(f"  OK Already exists: {output_path.name}")
         return True
+
+    temp_path = output_path.with_suffix(output_path.suffix + ".download")
+    if temp_path.exists():
+        temp_path.unlink()
 
     try:
         print(f"  -> Downloading: {output_path.name} from {url}")
         with DownloadProgressBar(unit="B", unit_scale=True, miniters=1, desc=output_path.name) as progress:
-            urllib.request.urlretrieve(url, filename=str(output_path), reporthook=progress.update_to)
+            urllib.request.urlretrieve(url, filename=str(temp_path), reporthook=progress.update_to)
+        temp_path.replace(output_path)
         print(f"  OK Downloaded: {output_path.name} ({output_path.stat().st_size / 1024 / 1024:.1f} MB)")
         return True
     except Exception as exc:
+        if temp_path.exists():
+            temp_path.unlink()
         print(f"  FAIL Failed to download {output_path.name}: {exc}")
         return False
 
 
-def extract_collection(archive_path: Path, output_dir: Path) -> bool:
+def extract_collection(archive_path: Path, output_dir: Path, force: bool = False) -> bool:
     """Extract collection.tsv from the official MS MARCO archive."""
     collection_path = output_dir / COLLECTION_FILENAME
-    if collection_path.exists():
+    if collection_path.exists() and not force:
         print(f"  OK Already extracted: {COLLECTION_FILENAME}")
         return True
+
+    temp_path = collection_path.with_suffix(".tmp")
+    if temp_path.exists():
+        temp_path.unlink()
 
     try:
         print(f"  -> Extracting: {COLLECTION_FILENAME}")
         with tarfile.open(archive_path, "r:gz") as archive:
             member = archive.getmember(COLLECTION_FILENAME)
-            archive.extract(member, path=output_dir)
+            source = archive.extractfile(member)
+            if source is None:
+                print(f"  FAIL Archive member is not a regular file: {COLLECTION_FILENAME}")
+                return False
+            with temp_path.open("wb") as destination:
+                shutil.copyfileobj(source, destination)
+        temp_path.replace(collection_path)
         print(
             f"  OK Extracted: {COLLECTION_FILENAME} "
             f"({collection_path.stat().st_size / 1024 / 1024:.1f} MB)"
@@ -75,6 +94,8 @@ def extract_collection(archive_path: Path, output_dir: Path) -> bool:
         print(f"  FAIL Archive does not contain {COLLECTION_FILENAME}")
         return False
     except Exception as exc:
+        if temp_path.exists():
+            temp_path.unlink()
         print(f"  FAIL Failed to extract {COLLECTION_FILENAME}: {exc}")
         return False
 
@@ -86,6 +107,11 @@ def parse_args() -> argparse.Namespace:
         "--include-collection",
         action="store_true",
         help="Download and extract the full collection.tsv archive.",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Replace existing files instead of skipping them.",
     )
     return parser.parse_args()
 
@@ -103,7 +129,7 @@ def main() -> None:
         if args.include_collection:
             print("This will download the qrels files and the full collection archive.\n")
         else:
-            print("This will download only the small qrels files.\n")
+            print("This will download only the query and qrels files.\n")
 
         success_count = 0
         failed_files: list[str] = []
@@ -111,7 +137,7 @@ def main() -> None:
         print("Downloading relevance judgments (qrels)...\n")
         for filename, url in DOWNLOADS.items():
             output_path = DATA_DIR / filename
-            if download_file(url, output_path):
+            if download_file(url, output_path, force=args.force):
                 success_count += 1
             else:
                 failed_files.append(filename)
@@ -119,9 +145,9 @@ def main() -> None:
         if args.include_collection:
             print("\nDownloading full passages collection...\n")
             archive_path = DATA_DIR / COLLECTION_ARCHIVE
-            if download_file(COLLECTION_URL, archive_path):
+            if download_file(COLLECTION_URL, archive_path, force=args.force):
                 success_count += 1
-                if extract_collection(archive_path, DATA_DIR):
+                if extract_collection(archive_path, DATA_DIR, force=args.force):
                     success_count += 1
                 else:
                     failed_files.append(COLLECTION_FILENAME)

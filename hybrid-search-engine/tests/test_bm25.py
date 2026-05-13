@@ -2,6 +2,14 @@ import pytest
 from src.search.bm25 import BM25Search
 
 
+class RecordingCheckpoint:
+    def __init__(self):
+        self.saved = []
+
+    def save_checkpoint(self, **kwargs):
+        self.saved.append(kwargs)
+
+
 # fixture is a special function in pytest that sets up a test environment (reusable across multiple tests)
 @pytest.fixture
 def bm25_with_test_data(tmp_path):
@@ -57,3 +65,31 @@ def test_exact_title_match_rank_first(bm25_with_test_data):
 
     assert len(results) >= 1
     assert results[0]["id"] == "1"
+
+
+def test_stream_checkpoint_tracks_committed_documents(tmp_path, monkeypatch):
+    monkeypatch.setattr("src.search.bm25.time.sleep", lambda _: None)
+
+    engine = BM25Search(index_path=tmp_path / "bm25_stream_index")
+    checkpoint = RecordingCheckpoint()
+    documents = [
+        {
+            "id": str(index),
+            "title": f"Document {index}",
+            "body": f"Durable checkpoint document {index}",
+            "category": "test",
+        }
+        for index in range(5)
+    ]
+
+    indexed = engine.add_documents_stream_with_checkpoint(
+        documents,
+        checkpoint,
+        collection_path=tmp_path / "collection.tsv",
+        batch_size=1,
+        checkpoint_interval=2,
+    )
+
+    assert indexed == 5
+    assert engine.committed_document_count() == 5
+    assert [item["total_documents_indexed"] for item in checkpoint.saved] == [2, 4, 5]
