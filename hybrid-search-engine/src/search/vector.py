@@ -8,11 +8,11 @@ import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-from src.config import EMBEDDING_MODEL_NAME, INDEX_DIR
+from src.config import EMBEDDING_MODEL_NAME, VECTOR_INDEX_PATH
 
 class VectorSearch:
     def __init__(self, index_path: Path | None=None):
-        index_path = index_path or INDEX_DIR / "vector.faiss" # stores the FAISS index file that contains embedding vectors and their corresponding document IDs.
+        index_path = index_path or VECTOR_INDEX_PATH # stores the FAISS index file that contains embedding vectors and their corresponding document IDs.
         self.index_path = index_path
         self.doc_ids_path = index_path.parent / "vector_doc_ids.npy" # stores the mapping of FAISS index positions to document IDs.
         self.model = SentenceTransformer(EMBEDDING_MODEL_NAME)
@@ -85,11 +85,15 @@ class VectorSearch:
         if not self.index_path.exists():
             raise FileNotFoundError(f"Vector index not found: {self.index_path}")
 
-        if not self.doc_ids_path.exists():
-            raise FileNotFoundError(f"Vector doc ID mapping not found: {self.doc_ids_path}")
-        
         self.index = faiss.read_index(str(self.index_path))
-        self.doc_ids = np.load(self.doc_ids_path).tolist()
+
+        # Small development indexes use a sidecar position -> doc_id mapping.
+        # Full MS MARCO indexes are built with faiss.IndexIDMap2, so FAISS
+        # returns passage IDs directly and this sidecar file is not required.
+        if self.doc_ids_path.exists():
+            self.doc_ids = np.load(self.doc_ids_path).tolist()
+        else:
+            self.doc_ids = []
     
     def search(self, query: str, top_k: int) ->list[dict[str, Any]]:
         """ Search simmantically simmilar documents for a query"""
@@ -111,8 +115,14 @@ class VectorSearch:
             
             if indx_position ==-1:
                 continue # FAISS may return empty positions if insufficient results exist.
+
+            if self.doc_ids:
+                doc_id = self.doc_ids[indx_position]
+            else:
+                doc_id = str(int(indx_position))
+
             results.append({
-                "id": self.doc_ids[indx_position],
+                "id": doc_id,
                 "score": float(score)
             })
         return results

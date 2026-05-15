@@ -7,7 +7,7 @@ from typing import Any
 def reciprocal_rank_fusion(
     bm25_results: list[dict[str, Any]],
     vector_results: list[dict[str, Any]],
-    k: int = 16,
+    k: int = 60,
     top_k: int = 10,
 ) -> list[dict[str, Any]]:
     
