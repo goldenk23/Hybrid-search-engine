@@ -9,12 +9,15 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 
 from src.config import EMBEDDING_MODEL_NAME, VECTOR_INDEX_PATH
+from src.database.docstore import SQLiteDocstore
 
 class VectorSearch:
     def __init__(self, index_path: Path | None=None):
         index_path = index_path or VECTOR_INDEX_PATH # stores the FAISS index file that contains embedding vectors and their corresponding document IDs.
         self.index_path = index_path
         self.doc_ids_path = index_path.parent / "vector_doc_ids.npy" # stores the mapping of FAISS index positions to document IDs.
+        self.docstore = SQLiteDocstore()
+        self.docstore.init()
         self.model = SentenceTransformer(EMBEDDING_MODEL_NAME)
         
         self.index: faiss.Index | None=None # FAISS index object for efficient similarity search.
@@ -51,6 +54,7 @@ class VectorSearch:
             for documents in documents
         ]
         self.doc_ids = [document.get('id', '') for document in documents]
+        self.docstore.upsert_documents(documents)
         
         embeddings = self._encode(texts)
         self.index = faiss.IndexFlatIP(embeddings.shape[1])
@@ -102,7 +106,8 @@ class VectorSearch:
             self.load()
         query_embedding = self._encode([query])
         
-        results = []
+        doc_ids = []
+        scores_by_id = {}
         
         score, indices = self.index.search(query_embedding, top_k)
         """ 
@@ -121,8 +126,25 @@ class VectorSearch:
             else:
                 doc_id = str(int(indx_position))
 
-            results.append({
-                "id": doc_id,
-                "score": float(score)
-            })
+            doc_id = str(doc_id)
+            doc_ids.append(doc_id)
+            scores_by_id[doc_id] = float(score)
+
+        docs_by_id = self.docstore.get_documents_by_ids(doc_ids)
+
+        results = []
+        for doc_id in doc_ids:
+            document = docs_by_id.get(doc_id)
+            if document is None:
+                continue
+
+            results.append(
+                {
+                    "id": doc_id,
+                    "title": document.get("title", ""),
+                    "body": document.get("body", ""),
+                    "category": document.get("category", ""),
+                    "score": scores_by_id[doc_id],
+                }
+            )
         return results

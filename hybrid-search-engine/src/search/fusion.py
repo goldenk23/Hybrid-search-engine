@@ -34,6 +34,7 @@ def reciprocal_rank_fusion(
         
         vector_score[doc_id] = result["score"]
         vector_rank[doc_id] = rank # Rank is position in vector results (1-based)
+        documents.setdefault(doc_id, result)# if bm25 already added this doc_id, we keep the existing document info (title, body, category). If not, we add the vector result's document info.
         rrf_score[doc_id] = rrf_score.get(doc_id, 0) + 1 / (k + rank) # RRF contribution from vector search
     
     sorted_docs_ids=sorted(

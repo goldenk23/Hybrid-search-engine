@@ -18,6 +18,7 @@ DATA_DIR = PROJECT_ROOT / "data"
 MODELS_DIR = PROJECT_ROOT / "models"
 INDEX_DIR = DATA_DIR / "indexes"
 VECTOR_INDEX_PATH = Path(os.getenv("VECTOR_INDEX_PATH", INDEX_DIR / "vector.faiss"))
+DOCSTORE_PATH = Path(os.getenv("DOCSTORE_PATH", DATA_DIR / "docstore.sqlite"))
 
 DATA_DIR.mkdir(exist_ok=True)
 MODELS_DIR.mkdir(exist_ok=True)

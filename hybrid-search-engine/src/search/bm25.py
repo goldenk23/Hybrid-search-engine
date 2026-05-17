@@ -8,6 +8,7 @@ import gc
 from pathlib import Path
 from typing import Any
 from collections.abc import Iterable
+from src.database.docstore import SQLiteDocstore
 
 import tantivy
 
@@ -22,12 +23,13 @@ class BM25Search:
 
     def __init__(self, index_path: Path | None = None, reset: bool = False, is_resuming: bool = False):
         self.index_path = index_path or INDEX_DIR / "bm25"
-
+        self.docstore = SQLiteDocstore()
+        self.docstore.init()
         self.schema = (
             tantivy.SchemaBuilder()
             .add_text_field("id", stored=True)
             .add_text_field("title", stored=True)
-            .add_text_field("body", stored=True)
+            .add_text_field("body", stored=False)
             .add_text_field("category", stored=True)
             .build()
         )
@@ -119,11 +121,11 @@ class BM25Search:
 
         return committed_docs
 
-   # documents: list of dicts with keys: id, title, body, category, all documents are loaded into RAM before indexing, which can cause memory issues for large collections. Consider using add_documents_stream for large datasets.
+   # documents: list of dicts with keys: id, title, body, category, all documents are loaded into RAM before indexing.
     def add_documents(self, documents: list[dict[str, Any]], batch_size: int = 5000) -> None:
         """Add documents to the BM25 index.
-        
-        For large datasets, use add_documents_stream instead.
+
+        For large datasets, use add_documents_stream_with_checkpoint instead.
         Commits only at the end to avoid Windows file locking issues.
         """
         committed_docs = self.committed_document_count()
@@ -139,6 +141,7 @@ class BM25Search:
                         category=document.get("category", ""),
                     )
                 )
+                self.docstore.upsert_documents([document])
 
                 # Print progress
                 if (i + 1) % batch_size == 0:
@@ -157,104 +160,6 @@ class BM25Search:
         finally:
             del writer
             gc.collect()
-        
-        
-    
-    #documents: iterable of dicts with keys: id, title, body, category, documents are indexed in batches without loading everything into RAM, which is more memory efficient for large collections.
-    def add_documents_stream(
-        self,
-        documents: Iterable[dict[str, Any]],
-        batch_size: int = 5000,  # Reduced batch size for stability on Windows
-    ) -> int:
-        """Add documents from an iterable without loading everything into memory.
-        
-        BULLETPROOF INDEXING for maximum stability:
-        - Uses conservative sub-batch sizes (30 docs)
-        - Generous delays (150ms) for worker thread processing
-        - Checkpoints every 20 lakhs documents to save progress
-        - Retry logic for transient failures
-        - Should achieve 99.9% crash-free indexing
-        """
-        count = 0
-        buffer_count = 0
-        checkpoint_interval = 25000
-        committed_docs = self.committed_document_count()
-        
-        # Create a single writer for the ENTIRE indexing process
-        writer = self._create_writer()
-        
-        # CONSERVATIVE sub-batch size for maximum stability
-        sub_batch_size = 150  # Very small = frequent synchronization
-        
-        try:
-            for document in documents:
-                # Retry logic for transient failures
-                max_retries = 3
-                for attempt in range(max_retries):
-                    try:
-                        writer.add_document(
-                            tantivy.Document(
-                                id=str(document["id"]),
-                                title=document.get("title", ""),
-                                body=document.get("body", ""),
-                                category=document.get("category", ""),
-                            )
-                        )
-                        break  # Success, move to next document
-                    except ValueError as e:
-                        if attempt < max_retries - 1:
-                            # Transient error, retry with longer delay
-                            gc.collect()
-                            time.sleep(0.5)
-                        else:
-                            # Final attempt failed, re-raise
-                            raise
-
-                count += 1
-                buffer_count += 1
-                
-                # Give Tantivy's worker threads time to process
-                if buffer_count % sub_batch_size == 0:
-                    gc.collect()
-                    time.sleep(0.05)  # 50ms - optimized for speed
-                
-                # Print progress at the larger batch interval
-                if count % batch_size == 0:
-                    print(f"  Indexed {count:,} documents...")
-                
-                # Frequent checkpoints to save progress
-                if count % checkpoint_interval == 0:
-                    print(f"  Checkpoint: Saving progress at {count:,} documents...")
-                    writer.commit()
-                    gc.collect()
-                    time.sleep(1.0)
-                    committed_docs = self._refresh_and_validate_commit(
-                        expected_min_docs=count,
-                        previous_committed_docs=committed_docs,
-                        label="Checkpoint commit verified",
-                    )
-                    # Create new writer for next batch
-                    del writer
-                    gc.collect()
-                    time.sleep(1.0)
-                    writer = self._create_writer()
-
-            # Final commit for any remaining documents
-            print(f"  Committing final batch...")
-            writer.commit()
-            gc.collect()
-            time.sleep(1.0)
-            self._refresh_and_validate_commit(
-                expected_min_docs=count,
-                previous_committed_docs=committed_docs,
-                label="Final commit verified",
-            )
-        finally:
-            # Ensure writer is cleaned up
-            del writer
-            gc.collect()
-
-        return count
 
     def add_documents_stream_with_checkpoint(
         self,
@@ -291,6 +196,8 @@ class BM25Search:
         
         # Conservative sub-batch size for maximum stability
         sub_batch_size = 150
+        docstore_batch = []
+        docstore_batch_size = 1000
         
         try:
             for document in documents:
@@ -317,6 +224,11 @@ class BM25Search:
 
                 count += 1
                 buffer_count += 1
+                docstore_batch.append(document)
+
+                if len(docstore_batch) >= docstore_batch_size:
+                    self.docstore.upsert_documents(docstore_batch)
+                    docstore_batch.clear()
                 
                 # Give Tantivy's worker threads time to process
                 if buffer_count % sub_batch_size == 0:
@@ -332,6 +244,10 @@ class BM25Search:
                 if count > start_count and (count - start_count) % checkpoint_interval == 0:
                     print(f"\n  Checkpoint at {count:,} documents...")
                     
+                    if docstore_batch:
+                        self.docstore.upsert_documents(docstore_batch)
+                        docstore_batch.clear()
+
                     print("     Committing checkpoint batch to disk...")
                     writer.commit()
                     gc.collect()
@@ -357,6 +273,10 @@ class BM25Search:
 
             # Final commit for the last partial checkpoint interval.
             print(f"\n  Final commit: Writing {count:,} documents to index...")
+            if docstore_batch:
+                self.docstore.upsert_documents(docstore_batch)
+                docstore_batch.clear()
+
             writer.commit()
             gc.collect()
             time.sleep(1.0)
@@ -383,6 +303,10 @@ class BM25Search:
             # Try to commit what we have so far (even though incomplete)
             try:
                 print("   Attempting to commit partial batch...")
+                if docstore_batch:
+                    self.docstore.upsert_documents(docstore_batch)
+                    docstore_batch.clear()
+
                 writer.commit()
                 committed_docs = self._refresh_and_validate_commit(
                     expected_min_docs=count,
@@ -440,16 +364,30 @@ class BM25Search:
         query_obj = self.index.parse_query(cleaned_query)
         hits = searcher.search(query_obj, top_k).hits
 
-        results = []
+        doc_ids = []
+        scores_by_id = {}
+
         for score, doc_address in hits:
             retrieved_doc = searcher.doc(doc_address)
+            doc_id = str(retrieved_doc.get_first("id"))
+            doc_ids.append(doc_id)
+            scores_by_id[doc_id] = score
+
+        docs_by_id = self.docstore.get_documents_by_ids(doc_ids)
+
+        results = []
+        for doc_id in doc_ids:
+            document = docs_by_id.get(doc_id)
+            if document is None:
+                continue
+
             results.append(
                 {
-                    "id": retrieved_doc.get_first("id"),
-                    "title": retrieved_doc.get_first("title"),
-                    "body": retrieved_doc.get_first("body"),
-                    "category": retrieved_doc.get_first("category"),
-                    "score": score,
+                    "id": doc_id,
+                    "title": document.get("title", ""),
+                    "body": document.get("body", ""),
+                    "category": document.get("category", ""),
+                    "score": scores_by_id[doc_id],
                 }
             )
 
