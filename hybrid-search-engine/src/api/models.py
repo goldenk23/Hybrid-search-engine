@@ -54,4 +54,19 @@ class HybridSearchResponse(BaseModel):
     query: str
     total: int
     latency_ms: int
+    results: list[HybridSearchResult]
+    
+class SearchResponse(BaseModel):
+    query: str
+    corrected_query: str | None = None
+    total: int
+    latency_ms: int
+    results: list[SearchResult]
+
+
+class HybridSearchResponse(BaseModel):
+    query: str
+    corrected_query: str | None = None
+    total: int
+    latency_ms: int
     results: list[HybridSearchResult]    
