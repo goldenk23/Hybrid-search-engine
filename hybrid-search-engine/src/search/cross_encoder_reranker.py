@@ -17,49 +17,51 @@ Search Pipeline Overview:
 from typing import Any
 from sentence_transformers import CrossEncoder
 from src.config import CROSS_ENCODER_MODEL_NAME
- 
-class CrossEncoderReranker:
-     def __init__(self, model_name: str = CROSS_ENCODER_MODEL_NAME):
-         self.model_name = model_name
-         self._model : CrossEncoder | None = None
 
-@property
-def model(self) -> CrossEncoder:
-    if self._model is None:
-         self._model = CrossEncoder(
+
+class CrossEncoderReranker:
+    def __init__(self, model_name: str = CROSS_ENCODER_MODEL_NAME):
+        self.model_name = model_name
+        self._model: CrossEncoder | None = None
+
+    @property
+    def model(self) -> CrossEncoder:
+        if self._model is None:
+            self._model = CrossEncoder(
                 self.model_name,
                 max_length=512,
             )
-         return self._model
+        return self._model
 
-def rerank(
-    self,
-    query: str,
-    candidates: list[dict[str, Any]],
-    top_k: int = 10,
-    max_candidates: int = 50,
-) -> list[dict[str, Any]]:
-    """ Rerank the candiate documents using query-document relevance scores"""
-    
-    if not candidates:
-        return []
-    candidate_to_score = candidates[:max_candidates]
-    
-    pairs=[
-        [query, f"{c.get('title', '')} {c.get('body', '')}"[:2000]] # Truncate to fit
-        for c in candidate_to_score
-    ]
-    scores = self.model.predict(
-        pairs,
-        batch_size=16,
-        show_progress_bar=True,
-    )
-    reranked_candidates = []
-    
-    # Attach scores to candidates and return the top_k sorted by score
-    reranked = [
-        {**candidate, "cross_encoder_score": score}
-        for candidate, score in zip(candidate_to_score, scores)
-    ]
+    def rerank(
+        self,
+        query: str,
+        candidates: list[dict[str, Any]],
+        top_k: int = 10,
+        max_candidates: int = 50,
+    ) -> list[dict[str, Any]]:
+        """Rerank candidate documents using query-document relevance scores."""
+        if not candidates:
+            return []
 
-    return sorted(reranked, key=lambda x: x["cross_encoder_score"], reverse=True)[:top_k]
+        candidates_to_score = candidates[:max_candidates]
+        pairs = [
+            [query, f"{candidate.get('title', '')} {candidate.get('body', '')}"[:2000]]
+            for candidate in candidates_to_score
+        ]
+        scores = self.model.predict(
+            pairs,
+            batch_size=16,
+            show_progress_bar=True,
+        )
+
+        reranked = [
+            {**candidate, "cross_encoder_score": float(score)}
+            for candidate, score in zip(candidates_to_score, scores)
+        ]
+
+        return sorted(
+            reranked,
+            key=lambda result: result["cross_encoder_score"],
+            reverse=True,
+        )[:top_k]

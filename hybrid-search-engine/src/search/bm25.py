@@ -9,10 +9,10 @@ from pathlib import Path
 from typing import Any
 from collections.abc import Iterable
 from src.database.docstore import SQLiteDocstore
+from src.config import BM25_INDEX_PATH, INDEX_DIR
 
 import tantivy
 
-from src.config import INDEX_DIR
 
 WRITER_HEAP_SIZE_BYTES = 64_000_000
 WRITER_NUM_THREADS = 1
@@ -22,15 +22,15 @@ class BM25Search:
     """BM25 search engine using Tantivy."""
 
     def __init__(self, index_path: Path | None = None, reset: bool = False, is_resuming: bool = False):
-        self.index_path = index_path or INDEX_DIR / "bm25"
+        self.index_path = index_path or BM25_INDEX_PATH
         self.docstore = SQLiteDocstore()
         self.docstore.init()
         self.schema = (
             tantivy.SchemaBuilder()
             .add_text_field("id", stored=True)
-            .add_text_field("title", stored=True)
+            .add_text_field("title", stored=False)
             .add_text_field("body", stored=False)
-            .add_text_field("category", stored=True)
+            .add_text_field("category", stored=False)
             .build()
         )
 

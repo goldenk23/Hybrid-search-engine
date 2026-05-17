@@ -1,7 +1,7 @@
 import sqlite3
+import zlib # For compressing document bodies before storage
 from pathlib import Path
 from typing import Any
-
 from src.config import DOCSTORE_PATH
 
 
@@ -21,13 +21,17 @@ class SQLiteDocstore:
                 """
                 CREATE TABLE IF NOT EXISTS documents (
                     id TEXT PRIMARY KEY,
-                    title TEXT NOT NULL,
-                    body TEXT NOT NULL,
-                    category TEXT
+                    body_compressed BLOB NOT NULL
                 )
                 """
             )
-            conn.execute("CREATE INDEX IF NOT EXISTS idx_documents_category ON documents(category)")
+    @staticmethod
+    def _compress_text(text: str) -> bytes:
+        return zlib.compress(text.encode("utf-8"), level=6)# level=6 => Moderate compression level for a good balance of speed and size
+    
+    @staticmethod
+    def _decompress_text(compressed: bytes) -> str:
+        return zlib.decompress(compressed).decode("utf-8")
 
     def upsert_documents(self, documents: list[dict[str, Any]]) -> None:
         """Insert or update documents in the local document store."""
@@ -37,19 +41,15 @@ class SQLiteDocstore:
         with self.connect() as conn:
             conn.executemany(
                 """
-                INSERT INTO documents (id, title, body, category)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO documents (id, body_compressed)
+                VALUES (?, ?)
                 ON CONFLICT(id) DO UPDATE SET
-                    title = excluded.title,
-                    body = excluded.body,
-                    category = excluded.category
+                body_compressed=excluded.body_compressed
                 """,
                 [
                     (
                         str(doc["id"]),
-                        doc.get("title", ""),
-                        doc.get("body", ""),
-                        doc.get("category", ""),
+                        self._compress_text(doc.get("body", "")),
                     )
                     for doc in documents
                 ],
@@ -64,23 +64,24 @@ class SQLiteDocstore:
             conn.row_factory = sqlite3.Row
             rows = conn.execute(
                 f"""
-                SELECT id, title, body, category
+                SELECT id, body_compressed
                 FROM documents
                 WHERE id IN ({placeholders})
                 """,
                 ids,
             ).fetchall()
-
-        return {
-            row["id"]: {
+            
+        documents = {}
+        for row in rows:
+            body = self._decompress_text(row["body_compressed"])
+            documents[row["id"]] = {
                 "id": row["id"],
-                "title": row["title"],
-                "body": row["body"],
-                "category": row["category"],
+                "title": body[:100],
+                "body": body,
+                "category": "msmarco",
             }
-            for row in rows
-        }
 
+        return documents
     def get_document_by_id(self, ids: list[str]) -> dict[str, dict[str, Any]]:
         """Backward-compatible alias for older call sites."""
         return self.get_documents_by_ids(ids)

@@ -17,6 +17,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
 MODELS_DIR = PROJECT_ROOT / "models"
 INDEX_DIR = DATA_DIR / "indexes"
+BM25_INDEX_PATH = Path(os.getenv("BM25_INDEX_PATH", INDEX_DIR / "bm25_compact"))
 VECTOR_INDEX_PATH = Path(os.getenv("VECTOR_INDEX_PATH", INDEX_DIR / "vector.faiss"))
 DOCSTORE_PATH = Path(os.getenv("DOCSTORE_PATH", DATA_DIR / "docstore.sqlite"))
 

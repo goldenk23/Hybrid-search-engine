@@ -69,4 +69,25 @@ class HybridSearchResponse(BaseModel):
     corrected_query: str | None = None
     total: int
     latency_ms: int
-    results: list[HybridSearchResult]    
+    results: list[HybridSearchResult]
+    
+class RerankedSearchResult(BaseModel):
+    id: str
+    title: str
+    body: str
+    category: str | None = None
+    rrf_score: float
+    bm25_score: float
+    vector_score: float
+    cross_encoder_score: float
+    bm25_rank: int | None = None
+    vector_rank: int | None = None
+    snippet: str | None = None
+
+
+class RerankedSearchResponse(BaseModel):
+    query: str
+    corrected_query: str | None = None
+    total: int
+    latency_ms: int
+    results: list[RerankedSearchResult]    

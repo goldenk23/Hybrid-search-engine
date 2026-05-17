@@ -8,8 +8,9 @@ from time import perf_counter
 
 from fastapi import APIRouter, HTTPException, Query
 
-from src.api.models import SearchResult, SearchResponse, HybridSearchResult, HybridSearchResponse
+from src.api.models import SearchResult, SearchResponse, HybridSearchResult, HybridSearchResponse,RerankedSearchResult, RerankedSearchResponse
 from src.config import RESULTS_PER_PAGE
+from src.search.cross_encoder_reranker import CrossEncoderReranker
 from src.indexing.preprocessing import generate_snippet
 from src.search.bm25 import BM25Search
 from src.search.hybrid_search import HybridSearchEngine
@@ -108,7 +109,69 @@ def hybrid_search(
 
     return HybridSearchResponse(
         query=query_text,
+        corrected_query=corrected_query if corrected_query != query_text else None,
         total=len(results),
         latency_ms=latency_ms,
         results=results,
+    )
+    
+    
+@router.get("/hybrid-search/rerank", response_model = RerankedSearchResponse)
+def hybrid_search_rerank(
+    q: str = Query(..., min_length=3, description="The search query"),
+    top_k: int = Query(default=RESULTS_PER_PAGE, ge=1, le=50, description="Number of final results to return after reranking"),
+    candidates_k: int = Query(default=100, ge=1, le=100, description="Number of candidates to retrieve before reranking")
+) -> RerankedSearchResponse:
+    """ Search documents using BM25 + vector search + RRF fusion + cross-encoder reranking """
+    query_text = q.strip()
+    if not query_text:
+        raise HTTPException(status_code=400, detail="Search query can not be empty")
+    
+    # Attempt spell correction
+    try:
+        corrected_query = spell_corrector.correct_query(query_text)
+    except Exception:
+        corrected_query = query_text
+    
+    # Use corrected query for search, but only if it's different
+    search_query = corrected_query if corrected_query and corrected_query != query_text else query_text
+    
+    start_time = perf_counter()
+    
+    hybrid_candidates = hybrid_engine.search(
+        query=search_query,
+        top_k=candidates_k
+    )
+    raranker = CrossEncoderReranker()
+    reranked_raw_results = raranker.rerank(
+        query=search_query,
+        candidates=hybrid_candidates,
+        top_k=top_k,
+        max_candidates=candidates_k
+    )
+    
+    latency_ms = int((perf_counter() - start_time) * 1000)
+    reranked_results = [
+        RerankedSearchResult(
+            id=str(result["id"]),
+            title=result.get("title", "") or "",
+            body=result.get("body", "") or "",
+            category=result.get("category"),
+            rrf_score=float(result["rrf_score"]),
+            bm25_score=float(result["bm25_score"]),
+            vector_score=float(result["vector_score"]),
+            cross_encoder_score=float(result["cross_encoder_score"]),
+            bm25_rank=result.get("bm25_rank"),
+            vector_rank=result.get("vector_rank"),
+            snippet=generate_snippet(result.get("body", "") or "", search_query),
+        )
+        for result in reranked_raw_results[:top_k]
+    ]
+    
+    return RerankedSearchResponse(
+        query=query_text,
+        corrected_query=corrected_query if corrected_query != query_text else None,
+        total=len(reranked_results),
+        latency_ms=latency_ms,
+        results=reranked_results,
     )
