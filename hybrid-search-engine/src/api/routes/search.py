@@ -8,26 +8,65 @@ from time import perf_counter
 
 from fastapi import APIRouter, HTTPException, Query
 
-from src.api.models import SearchResult, SearchResponse, HybridSearchResult, HybridSearchResponse,RerankedSearchResult, RerankedSearchResponse
+from src.api.models import (
+    HybridSearchResponse,
+    HybridSearchResult,
+    RerankedSearchResponse,
+    RerankedSearchResult,
+    SearchResponse,
+    SearchResult,
+)
 from src.config import RESULTS_PER_PAGE
-from src.search.cross_encoder_reranker import CrossEncoderReranker
 from src.indexing.preprocessing import generate_snippet
-from src.search.bm25 import BM25Search
-from src.search.hybrid_search import HybridSearchEngine
 from src.query.spell_check import SpellCorrector
+from src.search.bm25 import BM25Search
+from src.search.cross_encoder_reranker import CrossEncoderReranker
+from src.search.hybrid_search import HybridSearchEngine
 
 spell_corrector = SpellCorrector()
 spell_corrector.load_default_dictionary()
 
 router = APIRouter(tags=["search"])
-bm25 = BM25Search()
-hybrid_engine = HybridSearchEngine()
+
+_bm25: BM25Search | None = None
+_hybrid_engine: HybridSearchEngine | None = None
+_reranker: CrossEncoderReranker | None = None
+
+
+def get_bm25() -> BM25Search:
+    """Create the BM25 engine only when the first BM25 request arrives."""
+    global _bm25
+    if _bm25 is None:
+        _bm25 = BM25Search()
+    return _bm25
+
+
+def get_hybrid_engine() -> HybridSearchEngine:
+    """Create the hybrid engine only when vector search is needed."""
+    global _hybrid_engine
+    if _hybrid_engine is None:
+        _hybrid_engine = HybridSearchEngine()
+    return _hybrid_engine
+
+
+def get_reranker() -> CrossEncoderReranker:
+    """Reuse one lazy-loading cross-encoder reranker across requests."""
+    global _reranker
+    if _reranker is None:
+        _reranker = CrossEncoderReranker()
+    return _reranker
+
 
 @router.get("/search", response_model=SearchResponse)
 def search(
-    q: str=Query(..., min_length=3, description="The search query"),
-    top_k: int=Query(default=RESULTS_PER_PAGE, ge=1, le=100, description="Number of results to return")            
-)-> SearchResponse:
+    q: str = Query(..., min_length=3, description="The search query"),
+    top_k: int = Query(
+        default=RESULTS_PER_PAGE,
+        ge=1,
+        le=100,
+        description="Number of results to return",
+    ),
+) -> SearchResponse:
     """Search docmuments using BM25 search"""
     
     query_text = q.strip()
@@ -44,7 +83,7 @@ def search(
     search_query = corrected_query if corrected_query and corrected_query != query_text else query_text
     
     start_time = perf_counter()
-    raw_results = bm25.search(query=search_query, top_k=top_k)
+    raw_results = get_bm25().search(query=search_query, top_k=top_k)
     latency_ms = int((perf_counter() - start_time) * 1000)
 
     results = [
@@ -68,10 +107,10 @@ def search(
     
     )
     
-@router.get("/hybrid-search", response_model = HybridSearchResponse)
+@router.get("/hybrid-search", response_model=HybridSearchResponse)
 def hybrid_search(
-    q: str=Query(..., min_length=3, description="The search query"),
-    top_k: int=Query(default=RESULTS_PER_PAGE, ge=1, le=100),
+    q: str = Query(..., min_length=3, description="The search query"),
+    top_k: int = Query(default=RESULTS_PER_PAGE, ge=1, le=100),
 ) -> HybridSearchResponse:
     """ Search documents using BM25 + vetor search + RRF fusion """
     query_text = q.strip()
@@ -88,7 +127,7 @@ def hybrid_search(
     search_query = corrected_query if corrected_query and corrected_query != query_text else query_text
     
     start_time = perf_counter()
-    raw_results = hybrid_engine.search(query=search_query, top_k=top_k)
+    raw_results = get_hybrid_engine().search(query=search_query, top_k=top_k)
     latency_ms = int((perf_counter() - start_time) * 1000)
     
     results = [
@@ -116,11 +155,21 @@ def hybrid_search(
     )
     
     
-@router.get("/hybrid-search/rerank", response_model = RerankedSearchResponse)
+@router.get("/hybrid-search/rerank", response_model=RerankedSearchResponse)
 def hybrid_search_rerank(
     q: str = Query(..., min_length=3, description="The search query"),
-    top_k: int = Query(default=RESULTS_PER_PAGE, ge=1, le=50, description="Number of final results to return after reranking"),
-    candidates_k: int = Query(default=100, ge=1, le=100, description="Number of candidates to retrieve before reranking")
+    top_k: int = Query(
+        default=RESULTS_PER_PAGE,
+        ge=1,
+        le=50,
+        description="Number of final results to return after reranking",
+    ),
+    candidates_k: int = Query(
+        default=100,
+        ge=1,
+        le=100,
+        description="Number of candidates to retrieve before reranking",
+    ),
 ) -> RerankedSearchResponse:
     """ Search documents using BM25 + vector search + RRF fusion + cross-encoder reranking """
     query_text = q.strip()
@@ -138,12 +187,11 @@ def hybrid_search_rerank(
     
     start_time = perf_counter()
     
-    hybrid_candidates = hybrid_engine.search(
+    hybrid_candidates = get_hybrid_engine().search(
         query=search_query,
         top_k=candidates_k
     )
-    raranker = CrossEncoderReranker()
-    reranked_raw_results = raranker.rerank(
+    reranked_raw_results = get_reranker().rerank(
         query=search_query,
         candidates=hybrid_candidates,
         top_k=top_k,

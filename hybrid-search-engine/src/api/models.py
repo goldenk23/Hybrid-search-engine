@@ -8,6 +8,7 @@ The purpose of these models is to provide a clear contract for the API responses
 from pydantic import BaseModel
 # BaseModel is a base class for creating data models in Pydantic. It provides validation and serialization capabilities for the defined fields.
 
+
 class SearchResult(BaseModel):
     """
     Model representing a single search result.
@@ -17,16 +18,8 @@ class SearchResult(BaseModel):
     body: str
     category: str
     score: float
-    snippet: str | None=None
+    snippet: str | None = None
 
-class SearchResponse(BaseModel):
-    """
-    Model representing the search response containing multiple results.
-    """
-    query: str
-    total: int
-    latency_ms: int
-    results: list[SearchResult]
 
 class HealthResponse(BaseModel):
     """
@@ -34,6 +27,18 @@ class HealthResponse(BaseModel):
     """
     status: str
     service: str
+
+
+class SearchResponse(BaseModel):
+    """
+    Model representing the search response containing multiple results.
+    """
+    query: str
+    corrected_query: str | None = None
+    total: int
+    latency_ms: int
+    results: list[SearchResult]
+
 
 class HybridSearchResult(BaseModel):
     """
@@ -50,19 +55,6 @@ class HybridSearchResult(BaseModel):
     vector_rank: int | None = None
     snippet: str | None = None
 
-class HybridSearchResponse(BaseModel):
-    query: str
-    total: int
-    latency_ms: int
-    results: list[HybridSearchResult]
-    
-class SearchResponse(BaseModel):
-    query: str
-    corrected_query: str | None = None
-    total: int
-    latency_ms: int
-    results: list[SearchResult]
-
 
 class HybridSearchResponse(BaseModel):
     query: str
@@ -70,7 +62,8 @@ class HybridSearchResponse(BaseModel):
     total: int
     latency_ms: int
     results: list[HybridSearchResult]
-    
+
+
 class RerankedSearchResult(BaseModel):
     id: str
     title: str
@@ -90,4 +83,4 @@ class RerankedSearchResponse(BaseModel):
     corrected_query: str | None = None
     total: int
     latency_ms: int
-    results: list[RerankedSearchResult]    
+    results: list[RerankedSearchResult]
