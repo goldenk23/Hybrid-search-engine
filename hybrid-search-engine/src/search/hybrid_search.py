@@ -15,14 +15,23 @@ class HybridSearchEngine:
         self,
         bm25_search: BM25Search | None = None,
         vector_search: VectorSearch | None = None,
+        bm25_weight: float = 1.0,
+        vector_weight: float = 1.0,
+        rrf_k: int = 60,
     ):
         self.bm25_search = bm25_search or BM25Search()
         self.vector_search = vector_search or VectorSearch()
+        self.bm25_weight = bm25_weight
+        self.vector_weight = vector_weight
+        self.rrf_k = rrf_k
         
     def search(
         self,
         query: str,
         top_k: int = RERANK_TOP_K,
+        bm25_weight: float | None = None,
+        vector_weight: float | None = None,
+        rrf_k: int | None = None,
     ) -> list[dict[str, Any]]:
         """
         Run hybrid search:
@@ -40,4 +49,7 @@ class HybridSearchEngine:
             bm25_results = bm25_results,
             vector_results = vector_results,
             top_k = top_k,
+            k = rrf_k if rrf_k is not None else self.rrf_k,
+            bm25_weight = bm25_weight if bm25_weight is not None else self.bm25_weight,
+            vector_weight = vector_weight if vector_weight is not None else self.vector_weight,
         )

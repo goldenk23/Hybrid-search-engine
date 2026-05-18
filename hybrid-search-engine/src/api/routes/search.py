@@ -111,8 +111,23 @@ def search(
 def hybrid_search(
     q: str = Query(..., min_length=3, description="The search query"),
     top_k: int = Query(default=RESULTS_PER_PAGE, ge=1, le=100),
+    bm25_weight: float = Query(
+        default=1.0,
+        ge=0.0,
+        description="BM25 contribution weight for RRF fusion",
+    ),
+    vector_weight: float = Query(
+        default=1.0,
+        ge=0.0,
+        description="Vector contribution weight for RRF fusion",
+    ),
+    rrf_k: int = Query(
+        default=60,
+        ge=1,
+        description="RRF rank constant; larger values smooth rank differences",
+    ),
 ) -> HybridSearchResponse:
-    """ Search documents using BM25 + vetor search + RRF fusion """
+    """ Search documents using BM25 + vector search + weighted RRF fusion """
     query_text = q.strip()
     if not query_text:
         raise HTTPException(status_code=400, detail="Search query can not be empty")
@@ -127,7 +142,13 @@ def hybrid_search(
     search_query = corrected_query if corrected_query and corrected_query != query_text else query_text
     
     start_time = perf_counter()
-    raw_results = get_hybrid_engine().search(query=search_query, top_k=top_k)
+    raw_results = get_hybrid_engine().search(
+        query=search_query,
+        top_k=top_k,
+        bm25_weight=bm25_weight,
+        vector_weight=vector_weight,
+        rrf_k=rrf_k,
+    )
     latency_ms = int((perf_counter() - start_time) * 1000)
     
     results = [
@@ -170,8 +191,23 @@ def hybrid_search_rerank(
         le=100,
         description="Number of candidates to retrieve before reranking",
     ),
+    bm25_weight: float = Query(
+        default=1.0,
+        ge=0.0,
+        description="BM25 contribution weight for RRF candidate retrieval",
+    ),
+    vector_weight: float = Query(
+        default=1.0,
+        ge=0.0,
+        description="Vector contribution weight for RRF candidate retrieval",
+    ),
+    rrf_k: int = Query(
+        default=60,
+        ge=1,
+        description="RRF rank constant for candidate retrieval",
+    ),
 ) -> RerankedSearchResponse:
-    """ Search documents using BM25 + vector search + RRF fusion + cross-encoder reranking """
+    """ Search documents using weighted RRF candidate retrieval + cross-encoder reranking """
     query_text = q.strip()
     if not query_text:
         raise HTTPException(status_code=400, detail="Search query can not be empty")
@@ -189,7 +225,10 @@ def hybrid_search_rerank(
     
     hybrid_candidates = get_hybrid_engine().search(
         query=search_query,
-        top_k=candidates_k
+        top_k=candidates_k,
+        bm25_weight=bm25_weight,
+        vector_weight=vector_weight,
+        rrf_k=rrf_k,
     )
     reranked_raw_results = get_reranker().rerank(
         query=search_query,

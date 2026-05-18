@@ -1,4 +1,13 @@
 # ============================================================
+# LATENCY METRICS
+# ============================================================
+#
+# Metric              | Min     | Max         | Meaning
+# -------------------- | -------- | ----------- | -------
+# p50 latency         | 0 ms    | No fixed max| Median query time
+# p95 latency         | 0 ms    | No fixed max| Slow-query experience, 95% of queries are faster than this
+#
+# ============================================================
 # 1. NDCG@10 (Normalized Discounted Cumulative Gain at 10)
 # ============================================================
 #

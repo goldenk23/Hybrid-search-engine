@@ -1,5 +1,5 @@
-""" 
-Reciprocal Rank Fusion (RRF) implementation for combining search results from BM25 and vctor search
+"""
+Reciprocal Rank Fusion (RRF) implementation for combining BM25 and vector results.
 """
 
 from typing import Any
@@ -9,7 +9,11 @@ def reciprocal_rank_fusion(
     vector_results: list[dict[str, Any]],
     k: int = 60,
     top_k: int = 10,
+    bm25_weight: float = 1.0,
+    vector_weight: float = 1.0,
 ) -> list[dict[str, Any]]:
+    if bm25_weight < 0 or vector_weight < 0:
+        raise ValueError("RRF weights must be non-negative.")
     
     # type annotations
     rrf_score: dict[str, float] = {}
@@ -21,21 +25,21 @@ def reciprocal_rank_fusion(
     
     # process BM25 results
     for rank, result in enumerate(bm25_results, start=1):
-        doc_id = result["id"]
+        doc_id = str(result["id"])
         
         bm25_score[doc_id] = result["score"]
         bm25_rank[doc_id] = rank # Rank is position in BM25 results (1-based)
         documents[doc_id] = result
-        rrf_score[doc_id] = rrf_score.get(doc_id, 0) + 1 / (k + rank) # RRF contribution from BM25{ rrf_score.get(doc_id, 0): this is the current RRF score for the document, defaulting to 0 if it hasn't been seen before. + 1 / (k + rank): this adds the RRF contribution from the BM25 result, where k is a constant and rank is the position of the document in the BM25 results. The higher the rank (i.e., the lower the position), the larger the contribution to the RRF score.
+        rrf_score[doc_id] = rrf_score.get(doc_id, 0) + bm25_weight / (k + rank)
         
     # process vector results 
     for rank, result in enumerate(vector_results, start = 1):
-        doc_id = result["id"]
+        doc_id = str(result["id"])
         
         vector_score[doc_id] = result["score"]
         vector_rank[doc_id] = rank # Rank is position in vector results (1-based)
         documents.setdefault(doc_id, result)# if bm25 already added this doc_id, we keep the existing document info (title, body, category). If not, we add the vector result's document info.
-        rrf_score[doc_id] = rrf_score.get(doc_id, 0) + 1 / (k + rank) # RRF contribution from vector search
+        rrf_score[doc_id] = rrf_score.get(doc_id, 0) + vector_weight / (k + rank)
     
     sorted_docs_ids=sorted(
         rrf_score.keys(),
@@ -58,6 +62,8 @@ def reciprocal_rank_fusion(
                 "vector_score": vector_score.get(doc_id, 0.0),
                 "bm25_rank": bm25_rank.get(doc_id),
                 "vector_rank": vector_rank.get(doc_id),
+                "bm25_weight": bm25_weight,
+                "vector_weight": vector_weight,
             }
         )
     
