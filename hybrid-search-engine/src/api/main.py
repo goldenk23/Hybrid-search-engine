@@ -122,7 +122,7 @@ app.include_router(search_router)
 # URL:
 # GET /health
 # -------------------------------------------------------------------
-@app.get("/health", response_model=HealthResponse)
+@app.get("/healthEndpoint", response_model=HealthResponse)
 def health() -> HealthResponse:
     """
     Simple health check endpoint.
