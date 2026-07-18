@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 from src.config import DOCSTORE_PATH
 
+# Just making small comment
 
 class SQLiteDocstore:
     """Simple document store using SQLite."""
