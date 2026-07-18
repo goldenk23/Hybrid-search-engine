@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from src.api.models import (
     HybridSearchResponse,
+    HybridSearchResult,
     RerankedSearchResponse,
     RerankedSearchResult,
     SearchResponse,
@@ -50,7 +51,7 @@ def get_hybrid_engine() -> HybridSearchEngine:
 
 def get_reranker() -> CrossEncoderReranker:
     """Reuse one lazy-loading cross-encoder reranker across requests."""
-    global _reranker
+    global _rerank
     if _reranker is None:
         _reranker = CrossEncoderReranker()
     return _reranker
