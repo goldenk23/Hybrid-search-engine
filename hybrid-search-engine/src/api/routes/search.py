@@ -10,7 +10,6 @@ from fastapi import APIRouter, HTTPException, Query
 
 from src.api.models import (
     HybridSearchResponse,
-    HybridSearchResult,
     RerankedSearchResponse,
     RerankedSearchResult,
     SearchResponse,
