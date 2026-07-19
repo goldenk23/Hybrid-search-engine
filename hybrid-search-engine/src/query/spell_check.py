@@ -5,7 +5,7 @@ usages:
     spell_corrector = SpellCorrector()
     spell_corrector.load_default_dictionary()
     corrected_query = spell_corrector.correct_query("exampel query")
-""
+"""
 import importlib.resources
 
 from symspellpy import SymSpell, Verbosity
@@ -60,7 +60,7 @@ class SpellCorrector:
             transfer_casing=True,
         )
 
-        if suggestions:
+        if suggesons:
             return suggestions[0].term
 
         # Fallback: correct individual words if compound lookup returns nothing
