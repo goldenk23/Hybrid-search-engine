@@ -2,7 +2,7 @@ import sqlite3
 import zlib # For compressing document bodies before storage
 from pathlib import Path
 from typing import Any
-from src.config import 
+from src.config 
 
 # Just making small comment
 
