@@ -13,7 +13,7 @@ class HybridSearchEngine:
     
     def __init__(
         self,
-        bm25_search: BM25Search | None = None,
+        bm25_search: BM25Search ,
         vector_search: VectorSearch | None = None,
         bm25_weight: float = 1.0,
         vector_weight: float = 1.0,
