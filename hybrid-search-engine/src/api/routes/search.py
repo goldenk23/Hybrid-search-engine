@@ -227,24 +227,24 @@ def hybrid_search_rerank(
 
     start_time = perf_counter()
 
+    # ---------------- INTENTIONAL BUG ----------------
+    # BUG: Retrieves only top_k candidates instead of candidates_k.
+    # The reranker never sees enough candidates, reducing retrieval quality.
     hybrid_candidates = get_hybrid_engine().search(
         query=search_query,
-        top_k=candidates_k,
+        top_k=top_k,  # BUG: should be candidates_k
         bm25_weight=bm25_weight,
         vector_weight=vector_weight,
         rrf_k=rrf_k,
     )
+    # -------------------------------------------------
 
-    # ---------------- INTENTIONAL BUG ----------------
-    # Uses the original user query instead of the spell-corrected query.
-    # Candidate retrieval and reranking become inconsistent.
     reranked_raw_results = get_reranker().rerank(
-        query=query_text,  # BUG: should be search_query
+        query=search_query,
         candidates=hybrid_candidates,
         top_k=top_k,
         max_candidates=candidates_k,
     )
-    # -------------------------------------------------
 
     latency_ms = int((perf_counter() - start_time) * 1000)
 
