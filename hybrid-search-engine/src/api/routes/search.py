@@ -211,18 +211,22 @@ def hybrid_search_rerank(
     query_text = q.strip()
     if not query_text:
         raise HTTPException(status_code=400, detail="Search query can not be empty")
-    
+
     # Attempt spell correction
     try:
         corrected_query = spell_corrector.correct_query(query_text)
     except Exception:
         corrected_query = query_text
-    
+
     # Use corrected query for search, but only if it's different
-    search_query = corrected_query if corrected_query and corrected_query != query_text else query_text
-    
+    search_query = (
+        corrected_query
+        if corrected_query and corrected_query != query_text
+        else query_text
+    )
+
     start_time = perf_counter()
-    
+
     hybrid_candidates = get_hybrid_engine().search(
         query=search_query,
         top_k=candidates_k,
@@ -230,14 +234,20 @@ def hybrid_search_rerank(
         vector_weight=vector_weight,
         rrf_k=rrf_k,
     )
+
+    # ---------------- INTENTIONAL BUG ----------------
+    # Uses the original user query instead of the spell-corrected query.
+    # Candidate retrieval and reranking become inconsistent.
     reranked_raw_results = get_reranker().rerank(
-        query=search_query,
+        query=query_text,  # BUG: should be search_query
         candidates=hybrid_candidates,
         top_k=top_k,
-        max_candidates=candidates_k
+        max_candidates=candidates_k,
     )
-    
+    # -------------------------------------------------
+
     latency_ms = int((perf_counter() - start_time) * 1000)
+
     reranked_results = [
         RerankedSearchResult(
             id=str(result["id"]),
@@ -254,7 +264,7 @@ def hybrid_search_rerank(
         )
         for result in reranked_raw_results[:top_k]
     ]
-    
+
     return RerankedSearchResponse(
         query=query_text,
         corrected_query=corrected_query if corrected_query != query_text else None,
