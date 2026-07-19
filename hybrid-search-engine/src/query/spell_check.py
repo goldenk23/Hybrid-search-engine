@@ -11,13 +11,6 @@ import importlib.resources
 
 
 
-class SpellCorrector:
-    def __init__(self):
-        self.sym_spell = SymSpell(
-            max_dictionary_edit_distance=2,
-            prefix_length=7,
-        )
-        self.loaded = False
 
     def load_default_dictionary(self) -> None:
         dictionary_path = (
