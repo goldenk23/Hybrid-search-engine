@@ -15,9 +15,6 @@ Search Pipeline Overview:
 """
 
 from typing import Any
-from sentence_transformers import CrossEncoder
-from src.config import CROSS_ENCODER_MODEL_NAME
-
 
 class CrossEncoderReranker:
     def __init__(self, model_name: str = CROSS_ENCODER_MODEL_NAME):
