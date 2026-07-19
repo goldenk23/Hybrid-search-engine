@@ -76,14 +76,7 @@
 # ============================================================
 
     
-"""
-Usage:
-    python scripts/evaluate.py `
-  --queries data/msmarco/queries.dev.small.tsv `
-  --qrels data/msmarco/qrels.dev.small.tsv `
-  --max-queries 1000
 
-"""
 
 import argparse # handles command line arguments like --queries and  --qrels
 import csv # reads the tsv files containing queries and relevance judgments
