@@ -2,12 +2,6 @@ import pytest
 from src.search.bm25 import BM25Search
 
 
-class RecordingCheckpoint:
-    def __init__(self):
-        self.saved = []
-
-    def save_checkpoint(self, **kwargs):
-        self.saved.append(kwargs)
 
 
 # fixture is a special function in pytest that sets up a test environment (reusable across multiple tests)
