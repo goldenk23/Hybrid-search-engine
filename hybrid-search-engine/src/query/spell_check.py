@@ -8,7 +8,7 @@ usages:
 """
 import importlib.resources
 
-from symspellpy import SymSpell, Verbosity
+
 
 
 class SpellCorrector:
