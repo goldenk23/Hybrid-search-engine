@@ -2,23 +2,7 @@
 Document indexing pipeline with checkpoint and resume support.
 
 This module loads raw documents, cleans them, validates them, and builds
-the BM25 index used by the search engine. It supports:
-- Checkpointing every 25,000 documents
-- Resuming from checkpoints if indexing crashes
-- Continuous progress saving
-"""
 
-import sys
-from collections.abc import Generator
-from pathlib import Path
-from tqdm import tqdm
-from src.config import DATA_DIR, INDEX_DIR
-from src.indexing.preprocessing import clean_text, is_valid_document
-from src.indexing.checkpoint import IndexCheckpoint
-from src.search.bm25 import BM25Search
-
-
-def load_msmarco_passages(
     collection_path: Path,
     max_documents: int | None = None,
     skip_until_id: str | None = None,
