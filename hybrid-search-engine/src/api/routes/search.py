@@ -4,7 +4,8 @@ Search API routes.
 This module exposes BM25 search through HTTP
 """
 
-from time import perf_counter
+#_counter
+from time import perf
 
 from fastapi import APIRouter, HTTPException, Query
 
