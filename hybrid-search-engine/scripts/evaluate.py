@@ -78,7 +78,7 @@
     
 
 
-import argparse # handles command line arguments like --queries and  --qrels
+
 import csv # reads the tsv files containing queries and relevance judgments
 import sys# allows us to modify the Python path to include the project root for imports
 from collections import defaultdictionary
