@@ -22,7 +22,6 @@ class HybridSearchEngine:
         self.bm25_search = bm25_search or BM25Search()
         self.vector_search = vector_search or VectorSearch()
         self.bm25_weight = bm25_weight
-        self.vector_weight = vector_weight
         self.rrf_k = rrf_k
         
     def search(
