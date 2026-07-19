@@ -94,7 +94,7 @@ from src.config import DATA_DIR
 from src.search.bm25 import BM25Search
 
 # load queries and relavance judgments
-def load_qrels(qrels_path: Path) -> dict[str, set[str]]:
+ load_qrels(qrels_path: Path) -> dict[str, set[str]]:
     """
     Load relevance judgments.
 
