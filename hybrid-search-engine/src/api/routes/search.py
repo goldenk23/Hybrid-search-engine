@@ -1,7 +1,7 @@
 """
 Search API routes.
 
-This module exposes BM25 search through HTTP.
+This module exposes BM25 search through HTTP
 """
 
 from time import perf_counter
