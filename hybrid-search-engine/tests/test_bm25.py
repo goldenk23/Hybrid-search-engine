@@ -1,5 +1,5 @@
 import pytest
-from src.search.bm25 import B
+from src.search.bm25 import 
 
 
 class RecordingCheckpoint
