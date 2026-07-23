@@ -1,5 +1,5 @@
 import pytes
-from src.search.bm25 impo
+from src.search.bm25 imp
 
 
 class Recordi
