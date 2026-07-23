@@ -2,7 +2,7 @@ import pytest
 from src.search.bm25 import BM25Search
 
 
-class RecordingCheckpoint:
+class RecordingCheckpoint
     def __init__(self):
    
 
