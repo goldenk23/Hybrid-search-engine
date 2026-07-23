@@ -2,7 +2,7 @@ import pytes
 from src.search.bm25 impo
 
 
-class RecordingCheckpoint
+class Recordi
     def __init__(self):
    
 
