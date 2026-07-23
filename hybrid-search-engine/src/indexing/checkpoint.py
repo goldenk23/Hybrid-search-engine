@@ -7,9 +7,7 @@ it can resume from the last checkpoint instead of starting over.
 
 import json
 import time
-from datetime import datetime
-from pathlib import Path
-from typing import Optional
+
 
 
 class IndexCheckpoint:

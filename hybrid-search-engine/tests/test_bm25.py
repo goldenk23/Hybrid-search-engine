@@ -1,13 +1,10 @@
-import pytest
-from src.search.bm25 import BM25Search
+import pytes
+from src.search.bm25 imp
 
 
-class RecordingCheckpoint:
+class Recordi
     def __init__(self):
-        self.saved = []
-
-    def save_checkpoint(self, **kwargs):
-        self.saved.append(kwargs)
+   
 
 
 # fixture is a special function in pytest that sets up a test environment (reusable across multiple tests)
@@ -15,7 +12,7 @@ class RecordingCheckpoint:
 def bm25_with_test_data(tmp_path):
     # tmp_path is a special fixture provided by pytest.
     # It creates a temporary directory (folder) for your test.
-    engine = BM25Search(index_path=tmp_path / "bm25_test_index")
+    engine = BM25Search(index_path=tmp_path / "bm25_test_index
 
     documents = [
         {
