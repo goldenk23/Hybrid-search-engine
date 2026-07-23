@@ -12,7 +12,7 @@ class RecordingCheckpoint
 def bm25_with_test_data(tmp_path):
     # tmp_path is a special fixture provided by pytest.
     # It creates a temporary directory (folder) for your test.
-    engine = BM25Search(index_path=tmp_path / "bm25_test_index"
+    engine = BM25Search(index_path=tmp_path / "bm25_test_index
 
     documents = [
         {
