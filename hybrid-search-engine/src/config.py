@@ -21,9 +21,20 @@ BM25_INDEX_PATH = Path(os.getenv("BM25_INDEX_PATH", INDEX_DIR / "bm25_compact"))
 VECTOR_INDEX_PATH = Path(os.getenv("VECTOR_INDEX_PATH", INDEX_DIR / "vector.faiss"))
 DOCSTORE_PATH = Path(os.getenv("DOCSTORE_PATH", DATA_DIR / "docstore.sqlite"))
 
-DATA_DIR.mkdir(exist_ok=True)
-MODELS_DIR.mkdir(exist_ok=True)
-INDEX_DIR.mkdir(exist_ok=True)
+# Importing config should be a side-effect-free read of values.
+# Creating directories here fires on every import — including during tests —
+# and silently creates real data/ folders even when the test uses tmp_path.
+# Call ensure_build_directories() explicitly from scripts that need it.
+
+
+def ensure_build_directories() -> None:
+    """Create data/, models/, and indexes/ directories if they don't exist.
+
+    Call this at the top of indexing and download scripts.
+    Never call it from the API or from tests.
+    """
+    for path in (DATA_DIR, MODELS_DIR, INDEX_DIR):
+        path.mkdir(parents=True, exist_ok=True)
 
 POSTGRES_URL = os.getenv(
     "POSTGRES_URL",

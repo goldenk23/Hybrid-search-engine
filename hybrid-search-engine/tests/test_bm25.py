@@ -1,4 +1,5 @@
 import pytest
+from src.database.docstore import SQLiteDocstore
 from src.search.bm25 import BM25Search
 
 
@@ -10,12 +11,15 @@ class RecordingCheckpoint:
         self.saved.append(kwargs)
 
 
-# fixture is a special function in pytest that sets up a test environment (reusable across multiple tests)
 @pytest.fixture
 def bm25_with_test_data(tmp_path):
-    # tmp_path is a special fixture provided by pytest.
-    # It creates a temporary directory (folder) for your test.
-    engine = BM25Search(index_path=tmp_path / "bm25_test_index")
+    # Inject a throwaway docstore so the test never touches data/docstore.sqlite.
+    store = SQLiteDocstore(tmp_path / "docstore.sqlite")
+    engine = BM25Search(
+        index_path=tmp_path / "bm25_test_index",
+        docstore=store,
+        create_if_missing=True,
+    )
 
     documents = [
         {
@@ -70,7 +74,12 @@ def test_exact_title_match_rank_first(bm25_with_test_data):
 def test_stream_checkpoint_tracks_committed_documents(tmp_path, monkeypatch):
     monkeypatch.setattr("src.search.bm25.time.sleep", lambda _: None)
 
-    engine = BM25Search(index_path=tmp_path / "bm25_stream_index")
+    store = SQLiteDocstore(tmp_path / "docstore.sqlite")
+    engine = BM25Search(
+        index_path=tmp_path / "bm25_stream_index",
+        docstore=store,
+        create_if_missing=True,
+    )
     checkpoint = RecordingCheckpoint()
     documents = [
         {

@@ -6,19 +6,25 @@ sys.path.insert(0, str(project_root))
 
 from src.indexing.preprocessing import clean_text, generate_snippet, is_valid_document
 
-raw_text = """
+
+def main() -> None:
+    raw_text = """
 <p>Python &amp; FastAPI</p>
 
 FastAPI is a modern     web framework for building APIs.
 """
 
-cleaned = clean_text(raw_text)
+    cleaned = clean_text(raw_text)
 
-print("Cleaned:")
-print(cleaned)
+    print("Cleaned:")
+    print(cleaned)
 
-print("\nValid document?")
-print(is_valid_document("FastAPI Tutorial", cleaned))
+    print("\nValid document?")
+    print(is_valid_document("FastAPI Tutorial", cleaned))
 
-print("\nSnippet:")
-print(generate_snippet(cleaned, "web framework", snippet_length=80))
+    print("\nSnippet:")
+    print(generate_snippet(cleaned, "web framework", snippet_length=80))
+
+
+if __name__ == "__main__":
+    main()

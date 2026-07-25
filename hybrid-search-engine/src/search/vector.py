@@ -48,7 +48,7 @@ class VectorSearch:
         embeddings = self.model.encode(
             texts,
             batch_size=64,
-            show_progress_bar=True,
+            show_progress_bar=False,  # progress bars belong in batch jobs, not web requests
             convert_to_numpy=True,
             normalize_embeddings=True,
         )

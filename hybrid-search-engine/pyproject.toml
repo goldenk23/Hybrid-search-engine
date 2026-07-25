@@ -59,3 +59,9 @@ dev = [
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+
+[tool.pytest.ini_options]
+# Only collect tests from tests/ — prevents pytest from picking up scripts/test_*.py
+# and triggering real indexing during a test run.
+testpaths = ["tests"]
+python_files = ["test_*.py"]

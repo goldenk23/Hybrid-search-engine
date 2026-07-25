@@ -62,6 +62,7 @@ from src.config import (
     PREPROCESSING_VERSION,
     VECTOR_INDEX_PATH,
     BM25_INDEX_PATH,
+    ensure_build_directories,
 )
 from src.database.docstore import SQLiteDocstore
 from src.indexing.artifact_state import (
@@ -537,6 +538,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    ensure_build_directories()
 
     if args.status:
         print_status(args.index_path, args.checkpoint_path, args.manifest_path)

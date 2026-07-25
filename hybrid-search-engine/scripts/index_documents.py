@@ -77,7 +77,9 @@ sys.path.insert(0, str(project_root))
 
 from src.indexing.pipeline import run_indexing_pipeline
 from src.indexing.checkpoint import IndexCheckpoint
-from src.config import INDEX_DIR
+from src.config import INDEX_DIR, ensure_build_directories
+
+ensure_build_directories()
 
 
 def main() -> None:
