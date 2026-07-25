@@ -98,6 +98,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from src.config import DATA_DIR
+from src.evaluation.metrics import ndcg_at_k, mrr_at_k, recall_at_k
 from src.search.bm25 import BM25Search
 
 # load queries and relavance judgments
@@ -169,50 +170,16 @@ def load_queries(queries_path: Path) -> dict[str, str]:
     return queries 
 
 
-def compute_ndcg(ranked_doc_ids: list[str], relevant_id: set[str], k: int =10)-> float:
-    """
-    Compute NDCG@k for a single query.
+def compute_ndcg(ranked_doc_ids: list[str], relevant_id: set[str], k: int = 10) -> float:
+    return ndcg_at_k(ranked_doc_ids, relevant_id, k)
 
-    """
-    dcg=0.0
-    
-    for index, doc_id in enumerate(ranked_doc_ids[:k]):
-        if doc_id in relevant_id:
-            # standard DCG formula: relevance / log2(position + 1)
-            dcg+=1.0/np.log2(index+2)# index+2 because index starts at 0 but log2(1) should be the first position
-     
-     # compute best possbile dcg if all documents appeared in perfect order relative to relevant document in top k (for comparison)       
-    ideal_dcg=0.0
-    
-    for index in range(min(len(relevant_id), k)):
-        ideal_dcg+=1.0/np.log2(index+2)
-        
-    if ideal_dcg==0:
-        return 0.0
-    return dcg/ideal_dcg
 
 def compute_mrr(ranked_doc_ids: list[str], relevant_id: set[str]) -> float:
-    """
-    Compute MRR for a single query.
-    It is based on the position of first relevant document in the ranked list
-    """
-    for index, doc_id in enumerate(ranked_doc_ids):
-        if doc_id in relevant_id:
-            return 1.0/(index+1)
-        
-    return 0.0
+    return mrr_at_k(ranked_doc_ids, relevant_id, k=len(ranked_doc_ids) or 1)
 
-def compute_recall(ranked_doc_ids: list[str], relevant_id: set[str], k: int =100) ->float:
-    """
-    Compute Recall@k for a single query.
-    It is based on the fraction of relevant documents that appear in top k (retrieved documents)
-    """
-    if not relevant_id:
-         return 0.0
-    
-    retrieved_documents=set(ranked_doc_ids[:k])
-    found = retrieved_documents.intersection(relevant_id)
-    return len(found)/len(relevant_id)
+
+def compute_recall(ranked_doc_ids: list[str], relevant_id: set[str], k: int = 100) -> float:
+    return recall_at_k(ranked_doc_ids, relevant_id, k)
 
 
 def evaluate_bm25(

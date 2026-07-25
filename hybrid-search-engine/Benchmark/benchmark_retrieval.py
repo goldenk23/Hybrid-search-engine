@@ -1,100 +1,55 @@
 """Benchmark retrieval quality and latency for the hybrid search engine.
 
-WHAT THIS SCRIPT MEASURES
--------------------------
+PRECONDITIONS
+-------------
+1. Build both indexes and the docstore first:
+       python scripts/index_documents.py ...
+       python scripts/index_vectors.py   ...
 
-For the currently built indexes, this script evaluates:
-    1. BM25 search
-    2. Vector search
-    3. Hybrid RRF search
-    4. Hybrid RRF + cross-encoder reranking, unless --skip-rerank is used
+2. Create a cohort (run once, then commit the JSON):
+       python Benchmark/cohort.py create \\
+           --queries data/msmarco/queries.dev.small.tsv \\
+           --qrels   data/msmarco/qrels.dev.small.tsv  \\
+           --max-queries 500 \\
+           --output  Benchmark/cohorts/dev500.json
 
-It calculates and saves:
-    - NDCG@10
-    - MRR@10
-    - Recall@100
-    - p50 latency in milliseconds
-    - p95 latency in milliseconds
-    - BM25/vector/docstore artifact sizes
-    - BM25/vector/docstore document counts
-    - A presentation-ready Markdown benchmark table
+3. Run the benchmark with explicit arguments (no hidden defaults):
+       python Benchmark/benchmark_retrieval.py \\
+           --manifest  data/indexes/artifact_manifest.json \\
+           --cohort    Benchmark/cohorts/dev500.json \\
+           --queries   data/msmarco/queries.dev.small.tsv \\
+           --qrels     data/msmarco/qrels.dev.small.tsv  \\
+           --vector-index data/indexes/vector.faiss \\
+           --corpus-label 1M \\
+           --corpus-size  1000000 \\
+           --repeats 5
 
-IMPORTANT PRECONDITION
-----------------------
-
-Build the indexes first. This script does not index documents.
-
-Example for a 750K corpus:
-    python scripts/index_documents.py --collection data/msmarco/collection.tsv --max-docs 750000 --reset
-    python scripts/index_vectors.py --collection data/msmarco/collection.tsv --max-docs 750000 --reset
-    python scripts/quantize_vector_index.py --input data/indexes/vector.faiss --output data/indexes/vector.sq8.faiss
-
-The script filters evaluation queries so only queries with at least one relevant
-document in the current docstore are used. This is important for partial-corpus
-benchmarks such as 750K, 1M, 2M, 3M, or 4M.
-
-USAGE COMMANDS
---------------
-
-Fast smoke benchmark without reranking:
-    python Benchmark/benchmark_retrieval.py --corpus-label 750k --corpus-size 750000 --max-queries 100 --skip-rerank
-
-Standard 750K benchmark:
-    python Benchmark/benchmark_retrieval.py --corpus-label 1M --corpus-size 1000000 --max-queries 500 --rerank-queries 100
-
-Standard 1M benchmark:
-    python Benchmark/benchmark_retrieval.py --corpus-label 1m --corpus-size 1000000 --max-queries 500 --rerank-queries 100
-
-Standard 2M benchmark:
-    python Benchmark/benchmark_retrieval.py --corpus-label 2m --corpus-size 2000000 --max-queries 500 --rerank-queries 100
-
-Large 3M benchmark with fewer reranker queries:
-    python Benchmark/benchmark_retrieval.py --corpus-label 3m --corpus-size 3000000 --max-queries 500 --rerank-queries 50
-
-Large 4M benchmark with fewer reranker queries:
-    python Benchmark/benchmark_retrieval.py --corpus-label 4m --corpus-size 4000000 --max-queries 500 --rerank-queries 50
-
-Use custom evaluation subset files:
-    python Benchmark/benchmark_retrieval.py --corpus-label 750k --corpus-size 750000 \
-        --queries data/msmarco/queries.dev.small.tsv \
-        --qrels data/msmarco/qrels.dev.small.tsv
-
-Save results to a custom folder:
-    python Benchmark/benchmark_retrieval.py --corpus-label 750k --corpus-size 750000 \
-        --output-dir Benchmark/results
-
-OUTPUT
-------
-
-By default, results are saved as:
+OUTPUTS
+-------
     Benchmark/results/<corpus-label>.json
     Benchmark/results/<corpus-label>.md
     Benchmark/results/README.md
 
-Example:
-    Benchmark/results/750k.json
-    Benchmark/results/750k.md
+All three are written atomically (temp-file → rename).
 
-NOTES
------
-
-- Reranking is much slower than BM25/vector/hybrid search. Use --skip-rerank
-  for quick iteration.
-- The first run may be slower because FAISS/SentenceTransformer/CrossEncoder
-  models and indexes need to load.
-- For fair comparisons, use the same query subset for every system and every
-  corpus size.
+WHAT IS RECORDED IN EVERY RESULT
+---------------------------------
+    schema_version, UTC timestamp, Git commit + dirty flag,
+    sys.argv, platform, CPU count, cohort / query / qrel fingerprints,
+    generation_id from the manifest, model name + revision,
+    RRF k, per-system repeats, package versions.
 """
 
 from __future__ import annotations
 
 import argparse
-import csv
-import json
+import importlib.metadata
+import os
+import platform
 import sqlite3
+import subprocess
 import sys
 import time
-from collections import defaultdict
 from pathlib import Path
 from statistics import median
 from typing import Callable
@@ -107,480 +62,497 @@ from tqdm import tqdm
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.config import DATA_DIR
+from Benchmark.cohort import load_cohort
+from src.config import DATA_DIR, INDEX_DIR, DOCSTORE_PATH, BM25_INDEX_PATH, VECTOR_INDEX_PATH
+from src.evaluation.metrics import ndcg_at_k, mrr_at_k, recall_at_k
+from src.indexing.artifact_state import load_json_required, sha256_path, write_json_atomic
 from src.search.bm25 import BM25Search
 from src.search.cross_encoder_reranker import CrossEncoderReranker
 from src.search.hybrid_search import HybridSearchEngine
 from src.search.vector import VectorSearch
 
-
 SearchFn = Callable[[str, int], list[dict]]
 
 
-def load_queries(path: Path) -> dict[str, str]:
-    queries = {}
-    with path.open("r", encoding="utf-8") as file:
-        reader = csv.reader(file, delimiter="\t")
-        for row in reader:
-            if len(row) >= 2:
-                queries[row[0]] = row[1]
-    return queries
+# ------------------------------------------------------------------ guards
+
+def _verify_manifest(manifest_path: Path, corpus_size: int) -> dict:
+    """Load the manifest and refuse to benchmark if it is not complete."""
+    manifest = load_json_required(manifest_path)
+
+    if manifest.get("status") != "complete":
+        raise RuntimeError(
+            f"Benchmark requires a complete generation "
+            f"(manifest status = {manifest.get('status')!r}). "
+            "Finish indexing first."
+        )
+
+    counts = manifest.get("counts", {})
+    for name in ("bm25", "vector", "docstore"):
+        if name in counts and counts[name] != corpus_size:
+            raise RuntimeError(
+                f"Artifact count mismatch: manifest says {name}={counts[name]:,} "
+                f"but --corpus-size={corpus_size:,}. "
+                "Re-index or use the correct --corpus-size."
+            )
+
+    return manifest
 
 
-def load_qrels(path: Path) -> dict[str, set[str]]:
-    qrels = defaultdict(set)
-    with path.open("r", encoding="utf-8") as file:
-        reader = csv.reader(file, delimiter="\t")
-        for row in reader:
-            if len(row) < 4:
-                continue
-            query_id, document_id, relevance = row[0], row[2], int(row[3])
-            if relevance > 0:
-                qrels[query_id].add(document_id)
-    return dict(qrels)
-
-
-def load_indexed_doc_ids(max_doc_id: int | None = None) -> set[str]:
-    # MS MARCO passage IDs are numeric and the indexing pipeline indexes from
-    # the start of collection.tsv. For max-docs=N, indexed IDs are usually in
-    # the first N rows, but IDs can have gaps. Reading docstore is more robust.
-    with sqlite3.connect(DATA_DIR / "docstore.sqlite") as conn:
-        rows = conn.execute("SELECT id FROM documents").fetchall()
-    ids = {str(row[0]) for row in rows}
-    if max_doc_id is not None:
-        ids = {doc_id for doc_id in ids if doc_id.isdigit() and int(doc_id) <= max_doc_id}
-    return ids
-
-
-def filter_eval_queries(
-    queries: dict[str, str],
-    qrels: dict[str, set[str]],
-    indexed_doc_ids: set[str],
-    max_queries: int | None,
-) -> list[tuple[str, str, set[str]]]:
-    filtered = []
-    for query_id, query_text in queries.items():
-        relevant_ids = qrels.get(query_id)
-        if not relevant_ids:
-            continue
-
-        available_relevant_ids = relevant_ids.intersection(indexed_doc_ids)
-        if not available_relevant_ids:
-            continue
-
-        filtered.append((query_id, query_text, available_relevant_ids))
-        if max_queries is not None and len(filtered) >= max_queries:
-            break
-    return filtered
-
-
-def ndcg_at_k(ranked_doc_ids: list[str], relevant_ids: set[str], k: int = 10) -> float:
-    dcg = 0.0
-    for index, doc_id in enumerate(ranked_doc_ids[:k]):
-        if doc_id in relevant_ids:
-            dcg += 1.0 / np.log2(index + 2)
-
-    ideal_hits = min(len(relevant_ids), k)
-    idcg = sum(1.0 / np.log2(index + 2) for index in range(ideal_hits))
-    return 0.0 if idcg == 0 else float(dcg / idcg)
-
-
-def mrr_at_k(ranked_doc_ids: list[str], relevant_ids: set[str], k: int = 10) -> float:
-    for index, doc_id in enumerate(ranked_doc_ids[:k]):
-        if doc_id in relevant_ids:
-            return 1.0 / (index + 1)
-    return 0.0
-
-
-def recall_at_k(ranked_doc_ids: list[str], relevant_ids: set[str], k: int = 100) -> float:
-    if not relevant_ids:
-        return 0.0
-    return len(set(ranked_doc_ids[:k]).intersection(relevant_ids)) / len(relevant_ids)
-
-
-def percentile(values: list[float], pct: float) -> float:
-    if not values:
-        return 0.0
-    return float(np.percentile(values, pct))
-
-
-def evaluate_system(
-    name: str,
-    search_fn: SearchFn,
-    eval_queries: list[tuple[str, str, set[str]]],
-    top_k: int,
-    warmup_queries: int = 10,
-) -> dict:
-    for _, query_text, _ in eval_queries[:warmup_queries]:
-        search_fn(query_text, top_k)
-
-    ndcg_scores = []
-    mrr_scores = []
-    recall_scores = []
-    latencies_ms = []
-
-    for _, query_text, relevant_ids in tqdm(eval_queries, desc=f"Evaluating {name}"):
-        start = time.perf_counter()
-        results = search_fn(query_text, top_k)
-        latencies_ms.append((time.perf_counter() - start) * 1000)
-
-        ranked_doc_ids = [str(result["id"]) for result in results]
-        ndcg_scores.append(ndcg_at_k(ranked_doc_ids, relevant_ids, k=10))
-        mrr_scores.append(mrr_at_k(ranked_doc_ids, relevant_ids, k=10))
-        recall_scores.append(recall_at_k(ranked_doc_ids, relevant_ids, k=100))
-
-    return {
-        "queries": len(eval_queries),
-        "ndcg_at_10": float(np.mean(ndcg_scores)) if ndcg_scores else 0.0,
-        "mrr_at_10": float(np.mean(mrr_scores)) if mrr_scores else 0.0,
-        "recall_at_100": float(np.mean(recall_scores)) if recall_scores else 0.0,
-        "p50_ms": round(median(latencies_ms), 2) if latencies_ms else 0.0,
-        "p95_ms": round(percentile(latencies_ms, 95), 2),
+def _verify_artifact_fingerprints(manifest: dict, vector_index_path: Path) -> None:
+    """Compare on-disk fingerprints to the manifest receipt."""
+    stored = manifest.get("artifact_sha256", {})
+    to_check = {
+        "vector": vector_index_path,
+        "docstore": DOCSTORE_PATH,
     }
+    if BM25_INDEX_PATH.exists():
+        to_check["bm25"] = BM25_INDEX_PATH
+
+    for name, path in to_check.items():
+        if name not in stored:
+            continue
+        actual = sha256_path(path)
+        if actual != stored[name]:
+            raise RuntimeError(
+                f"Artifact fingerprint mismatch for '{name}'.\n"
+                f"  manifest: {stored[name]}\n"
+                f"  on disk:  {actual}\n"
+                "The index may have been rebuilt without updating the manifest."
+            )
 
 
-def size_bytes(path: Path) -> int:
+def _verify_sq8(sq8_path: Path, corpus_size: int) -> None:
+    """If a SQ8-compressed index is supplied, confirm it matches the corpus size."""
+    sq8 = faiss.read_index(str(sq8_path))
+    if sq8.ntotal != corpus_size:
+        raise RuntimeError(
+            f"SQ8 index is stale: ntotal={sq8.ntotal:,} "
+            f"but --corpus-size={corpus_size:,}."
+        )
+
+
+# ------------------------------------------------------------------ document counts
+
+def _document_counts(vector_index_path: Path) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    if BM25_INDEX_PATH.exists():
+        counts["bm25"] = tantivy.Index.open(str(BM25_INDEX_PATH)).searcher().num_docs
+    if vector_index_path.exists():
+        counts["vector"] = faiss.read_index(str(vector_index_path)).ntotal
+    if DOCSTORE_PATH.exists():
+        with sqlite3.connect(DOCSTORE_PATH) as conn:
+            counts["docstore"] = conn.execute(
+                "SELECT COUNT(*) FROM documents"
+            ).fetchone()[0]
+    return counts
+
+
+# ------------------------------------------------------------------ artifact sizes
+
+def _size_bytes(path: Path) -> int:
     if not path.exists():
         return 0
     if path.is_file():
         return path.stat().st_size
-    return sum(file.stat().st_size for file in path.rglob("*") if file.is_file())
+    return sum(f.stat().st_size for f in path.rglob("*") if f.is_file())
 
 
-def mib(num_bytes: int) -> float:
-    return round(num_bytes / 1024 / 1024, 2)
+def _mib(b: int) -> float:
+    return round(b / 1024 / 1024, 2)
 
 
-def artifact_sizes() -> dict[str, float]:
-    bm25 = mib(size_bytes(DATA_DIR / "indexes" / "bm25_compact"))
-    vector = mib(size_bytes(DATA_DIR / "indexes" / "vector.faiss"))
-    vector_sq8 = mib(size_bytes(DATA_DIR / "indexes" / "vector.sq8.faiss"))
-    docstore = mib(size_bytes(DATA_DIR / "docstore.sqlite"))
+def _artifact_sizes(vector_index_path: Path, sq8_path: Path | None) -> dict[str, float]:
+    bm25_mib    = _mib(_size_bytes(BM25_INDEX_PATH))
+    vector_mib  = _mib(_size_bytes(vector_index_path))
+    sq8_mib     = _mib(_size_bytes(sq8_path)) if sq8_path else 0.0
+    store_mib   = _mib(_size_bytes(DOCSTORE_PATH))
     return {
-        "bm25_compact_mib": bm25,
-        "vector_faiss_mib": vector,
-        "vector_sq8_mib": vector_sq8,
-        "docstore_mib": docstore,
-        "total_compact_with_sq8_mib": round(bm25 + vector_sq8 + docstore, 2),
+        "bm25_compact_mib": bm25_mib,
+        "vector_faiss_mib": vector_mib,
+        "vector_sq8_mib":   sq8_mib,
+        "docstore_mib":     store_mib,
+        "total_compact_with_sq8_mib": round(bm25_mib + sq8_mib + store_mib, 2),
     }
 
 
-def document_counts() -> dict[str, int]:
-    counts = {}
+# ------------------------------------------------------------------ provenance
 
-    bm25_path = DATA_DIR / "indexes" / "bm25_compact"
-    if bm25_path.exists():
-        counts["bm25"] = tantivy.Index.open(str(bm25_path)).searcher().num_docs
+def _git_info() -> dict:
+    def _run(*args) -> str:
+        try:
+            return subprocess.check_output(args, text=True,
+                                           stderr=subprocess.DEVNULL).strip()
+        except Exception:
+            return "unknown"
 
-    vector_path = DATA_DIR / "indexes" / "vector.faiss"
-    if vector_path.exists():
-        counts["vector"] = faiss.read_index(str(vector_path)).ntotal
-
-    docstore_path = DATA_DIR / "docstore.sqlite"
-    if docstore_path.exists():
-        with sqlite3.connect(docstore_path) as conn:
-            counts["docstore"] = conn.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
-
-    return counts
+    commit = _run("git", "rev-parse", "--short", "HEAD")
+    dirty  = _run("git", "status", "--porcelain") != ""
+    return {"commit": commit, "dirty": dirty}
 
 
-def format_system_name(name: str) -> str:
-    display_names = {
-        "bm25": "BM25",
-        "vector": "Vector",
-        "hybrid_rrf": "Hybrid RRF",
-        "hybrid_rrf_bm25_050_vector_100": "Weighted RRF (BM25 0.50, Vector 1.00)",
-        "hybrid_rrf_bm25_025_vector_100": "Weighted RRF (BM25 0.25, Vector 1.00)",
-        "hybrid_rerank": "Hybrid RRF + Cross-Encoder",
+def _package_versions() -> dict[str, str]:
+    pkgs = ["faiss-cpu", "sentence-transformers", "tantivy", "numpy", "tqdm"]
+    out: dict[str, str] = {}
+    for pkg in pkgs:
+        try:
+            out[pkg] = importlib.metadata.version(pkg)
+        except importlib.metadata.PackageNotFoundError:
+            out[pkg] = "unknown"
+    return out
+
+
+def _build_provenance(args: argparse.Namespace, manifest: dict,
+                       cohort_path: Path) -> dict:
+    return {
+        "schema_version":     1,
+        "utc_timestamp":      time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "git":                _git_info(),
+        "argv":               sys.argv,
+        "platform":           platform.platform(),
+        "cpu_count":          os.cpu_count(),
+        "generation_id":      manifest.get("generation_id"),
+        "embedding_model":    manifest.get("embedding_model"),
+        "embedding_revision": manifest.get("embedding_revision"),
+        "cohort_sha256":      sha256_path(cohort_path),
+        "rrf_k":              args.rrf_k,
+        "repeats":            args.repeats,
+        "packages":           _package_versions(),
     }
-    return display_names.get(name, name.replace("_", " ").title())
 
 
-def format_number(value: object, decimals: int = 4) -> str:
-    if isinstance(value, int):
-        return f"{value:,}"
-    if isinstance(value, float):
-        return f"{value:.{decimals}f}"
-    return str(value)
+# ------------------------------------------------------------------ evaluation
+
+def _percentile(values: list[float], pct: float) -> float:
+    return float(np.percentile(values, pct)) if values else 0.0
 
 
-def build_markdown_table(headers: list[str], rows: list[list[str]], right_align_columns: bool = False) -> str:
-    if not headers or not rows:
-        return ""
+def _evaluate_system(
+    name: str,
+    search_fn: SearchFn,
+    eval_queries: list[tuple[str, str, set[str]]],
+    top_k: int,
+    repeats: int,
+    warmup: int = 3,
+) -> dict:
+    """Run search_fn for each query `repeats` times; report median latencies."""
+    # Warmup: discard first few queries to avoid cold-start timing.
+    for _, qtext, _ in eval_queries[:warmup]:
+        search_fn(qtext, top_k)
 
-    separator = ["---"]
-    separator.extend("---:" if right_align_columns else "---" for _ in headers[1:])
+    ndcg_scores: list[float]  = []
+    mrr_scores: list[float]   = []
+    recall_scores: list[float] = []
+    # One list per run so we can take the per-query median across repeats.
+    run_latencies: list[list[float]] = [[] for _ in range(repeats)]
 
-    table_lines = [
-        "| " + " | ".join(headers) + " |",
-        "| " + " | ".join(separator) + " |",
-    ]
+    for _, qtext, relevant in tqdm(eval_queries, desc=f"Evaluating {name}"):
+        for run in range(repeats):
+            t0 = time.perf_counter()
+            results = search_fn(qtext, top_k)
+            run_latencies[run].append((time.perf_counter() - t0) * 1000)
+
+        # Quality is stable across repeats — compute once from the last run.
+        ranked = [str(r["id"]) for r in results]
+        ndcg_scores.append(ndcg_at_k(ranked, relevant, k=10))
+        mrr_scores.append(mrr_at_k(ranked, relevant, k=10))
+        recall_scores.append(recall_at_k(ranked, relevant, k=100))
+
+    # Per-query median latency across repeats, then p50/p95 over queries.
+    median_latencies = [median(run_latencies[r][q] for r in range(repeats))
+                        for q in range(len(eval_queries))]
+
+    return {
+        "queries":      len(eval_queries),
+        "ndcg_at_10":   float(np.mean(ndcg_scores))   if ndcg_scores else 0.0,
+        "mrr_at_10":    float(np.mean(mrr_scores))    if mrr_scores  else 0.0,
+        "recall_at_100": float(np.mean(recall_scores)) if recall_scores else 0.0,
+        "p50_ms":       round(median(median_latencies), 2) if median_latencies else 0.0,
+        "p95_ms":       round(_percentile(median_latencies, 95), 2),
+    }
+
+
+# ------------------------------------------------------------------ filtering
+
+def _filter_queries(
+    queries: dict[str, str],
+    qrels:   dict[str, set[str]],
+    indexed_doc_ids: set[str],
+) -> list[tuple[str, str, set[str]]]:
+    """Keep only queries that have at least one relevant doc in the index."""
+    out = []
+    for qid, qtext in queries.items():
+        relevant = qrels.get(qid, set())
+        available = relevant & indexed_doc_ids
+        if available:
+            out.append((qid, qtext, available))
+    return out
+
+
+def _load_indexed_ids() -> set[str]:
+    if not DOCSTORE_PATH.exists():
+        return set()
+    with sqlite3.connect(DOCSTORE_PATH) as conn:
+        return {str(row[0]) for row in conn.execute("SELECT id FROM documents")}
+
+
+# ------------------------------------------------------------------ markdown
+
+def _format(v: object, d: int = 4) -> str:
+    if isinstance(v, int):
+        return f"{v:,}"
+    if isinstance(v, float):
+        return f"{v:.{d}f}"
+    return str(v)
+
+
+_DISPLAY = {
+    "bm25":                              "BM25",
+    "vector":                            "Vector",
+    "hybrid_rrf":                        "Hybrid RRF (1.0 / 1.0)",
+    "hybrid_rrf_bm25_050_vector_100":    "Weighted RRF (0.50 / 1.00)",
+    "hybrid_rrf_bm25_025_vector_100":    "Weighted RRF (0.25 / 1.00)",
+    "hybrid_rerank":                     "Hybrid + Cross-Encoder",
+}
+
+
+def _md_table(headers: list[str], rows: list[list[str]]) -> str:
+    sep = ["---"] + ["---:" for _ in headers[1:]]
+    lines = ["| " + " | ".join(headers) + " |",
+             "| " + " | ".join(sep)     + " |"]
     for row in rows:
-        table_lines.append("| " + " | ".join(row) + " |")
-    return "\n".join(table_lines)
+        lines.append("| " + " | ".join(row) + " |")
+    return "\n".join(lines)
 
 
-def benchmark_markdown(result: dict) -> str:
-    systems = result["systems"]
-    artifact_sizes = result["artifact_size_mib"]
-    document_counts_result = result["document_counts"]
-
+def _result_to_markdown(result: dict) -> str:
+    d  = result["document_counts"]
+    sz = result["artifact_size_mib"]
     lines = [
         f"# Retrieval Benchmark: {result['corpus_label']}",
         "",
         "## Summary",
         "",
-        f"- Corpus size: {result['corpus_size']:,} documents",
+        f"- Corpus size: {result['corpus_size']:,}",
         f"- Evaluation queries: {result['eval_queries']:,}",
-        f"- BM25 documents: {document_counts_result.get('bm25', 0):,}",
-        f"- Vector documents: {document_counts_result.get('vector', 0):,}",
-        f"- Docstore documents: {document_counts_result.get('docstore', 0):,}",
-        f"- Compact index size with SQ8: {artifact_sizes.get('total_compact_with_sq8_mib', 0):,.2f} MiB",
+        f"- BM25 documents: {d.get('bm25', 0):,}",
+        f"- Vector documents: {d.get('vector', 0):,}",
+        f"- Docstore documents: {d.get('docstore', 0):,}",
+        f"- Generation ID: {result['provenance'].get('generation_id', 'n/a')}",
+        f"- Git commit: {result['provenance']['git'].get('commit', 'n/a')}"
+          + (" (dirty)" if result['provenance']['git'].get('dirty') else ""),
+        f"- Repeats per query: {result['provenance']['repeats']}",
         "",
         "## Benchmark Results",
         "",
     ]
-
-    benchmark_headers = ["System", "Queries", "NDCG@10", "MRR@10", "Recall@100", "p50 Latency (ms)", "p95 Latency (ms)"]
-    benchmark_rows = []
-    for system_name, metrics in systems.items():
-        benchmark_rows.append([
-            format_system_name(system_name),
-            format_number(metrics["queries"], 0),
-            format_number(metrics["ndcg_at_10"]),
-            format_number(metrics["mrr_at_10"]),
-            format_number(metrics["recall_at_100"]),
-            format_number(metrics["p50_ms"], 2),
-            format_number(metrics["p95_ms"], 2),
+    hdrs = ["System", "Queries", "NDCG@10", "MRR@10", "Recall@100",
+            "p50 (ms)", "p95 (ms)"]
+    rows = []
+    for sname, m in result["systems"].items():
+        rows.append([
+            _DISPLAY.get(sname, sname),
+            _format(m["queries"], 0),
+            _format(m["ndcg_at_10"]),
+            _format(m["mrr_at_10"]),
+            _format(m["recall_at_100"]),
+            _format(m["p50_ms"], 2),
+            _format(m["p95_ms"], 2),
         ])
-
-    lines.append(build_markdown_table(benchmark_headers, benchmark_rows, right_align_columns=True))
-    lines.extend(
-        [
-            "",
-            "## Storage Footprint",
-            "",
-        ]
-    )
-
-    storage_headers = ["Artifact", "Size (MiB)"]
-    storage_rows = [
-        ["BM25 compact index", f"{artifact_sizes.get('bm25_compact_mib', 0):,.2f}"],
-        ["Vector FAISS index", f"{artifact_sizes.get('vector_faiss_mib', 0):,.2f}"],
-        ["Vector SQ8 FAISS index", f"{artifact_sizes.get('vector_sq8_mib', 0):,.2f}"],
-        ["SQLite docstore", f"{artifact_sizes.get('docstore_mib', 0):,.2f}"],
-        ["Total compact with SQ8", f"{artifact_sizes.get('total_compact_with_sq8_mib', 0):,.2f}"],
+    lines += [_md_table(hdrs, rows), "", "## Storage", ""]
+    shdrs = ["Artifact", "MiB"]
+    srows = [
+        ["BM25 index",         f"{sz.get('bm25_compact_mib', 0):,.2f}"],
+        ["Vector FAISS",       f"{sz.get('vector_faiss_mib', 0):,.2f}"],
+        ["Vector SQ8",         f"{sz.get('vector_sq8_mib', 0):,.2f}"],
+        ["Docstore",           f"{sz.get('docstore_mib', 0):,.2f}"],
+        ["Total (BM25+SQ8+DS)",f"{sz.get('total_compact_with_sq8_mib',0):,.2f}"],
     ]
-
-    lines.append(build_markdown_table(storage_headers, storage_rows, right_align_columns=True))
-    lines.extend(
-        [
-            "",
-            "## Notes",
-            "",
-            "- Higher NDCG@10, MRR@10, and Recall@100 indicate better retrieval quality.",
-            "- Lower p50 and p95 latency indicate faster query response times.",
-            "- Hybrid reranking may use fewer queries when `--rerank-queries` is lower than `--max-queries`.",
-            "",
-        ]
-    )
+    lines += [_md_table(shdrs, srows), ""]
     return "\n".join(lines)
 
 
-def load_saved_benchmark_results(output_dir: Path) -> list[dict]:
-    results = []
-    for json_path in sorted(output_dir.glob("*.json")):
-        try:
-            results.append(json.loads(json_path.read_text(encoding="utf-8")))
-        except json.JSONDecodeError:
-            print(f"Skipping invalid benchmark JSON: {json_path}")
-    return sorted(results, key=lambda item: (item.get("corpus_size", 0), item.get("corpus_label", "")))
-
-
-def benchmark_readme(results: list[dict]) -> str:
+def _readme_markdown(results: list[dict]) -> str:
     lines = [
         "# Hybrid Search Benchmark Results",
         "",
-        "This file is updated automatically after each benchmark run.",
+        "Auto-generated. Re-run a benchmark to update.",
         "",
     ]
-
     if not results:
-        lines.extend(["No benchmark results are available yet.", ""])
-        return "\n".join(lines)
+        return "\n".join(lines + ["No results yet.", ""])
 
-    overview_headers = [
-        "Corpus",
-        "System",
-        "Queries",
-        "NDCG@10",
-        "MRR@10",
-        "Recall@100",
-        "p50 Latency (ms)",
-        "p95 Latency (ms)",
-        "Compact Size (MiB)",
-    ]
-    overview_rows = []
-
-    for result in results:
-        compact_size = f"{result['artifact_size_mib'].get('total_compact_with_sq8_mib', 0):,.2f}"
-        for system_name, metrics in result["systems"].items():
-            overview_rows.append(
-                [
-                    str(result["corpus_label"]),
-                    format_system_name(system_name),
-                    format_number(metrics["queries"], 0),
-                    format_number(metrics["ndcg_at_10"]),
-                    format_number(metrics["mrr_at_10"]),
-                    format_number(metrics["recall_at_100"]),
-                    format_number(metrics["p50_ms"], 2),
-                    format_number(metrics["p95_ms"], 2),
-                    compact_size,
-                ]
-            )
-
-    lines.extend(
-        [
-            "## Presentation Summary Table",
-            "",
-            build_markdown_table(overview_headers, overview_rows, right_align_columns=True),
-            "",
-            "## Result Files",
-            "",
-            "| Corpus | JSON | Report |",
-            "|---|---|---|",
-        ]
-    )
-
-    for result in results:
-        corpus_label = result["corpus_label"]
-        lines.append(f"| {corpus_label} | `{corpus_label}.json` | `{corpus_label}.md` |")
-
-    lines.extend(
-        [
-            "",
-            "## Notes",
-            "",
-            "- Re-running a benchmark with the same `--corpus-label` updates that corpus JSON and report.",
-            "- This README is rebuilt from all JSON files in this folder after every run.",
-            "- Higher retrieval metrics are better; lower latency metrics are better.",
-            "",
-        ]
-    )
+    hdrs = ["Corpus", "System", "Queries", "NDCG@10", "MRR@10",
+            "Recall@100", "p50 (ms)", "p95 (ms)"]
+    rows = []
+    for r in results:
+        for sname, m in r["systems"].items():
+            rows.append([
+                str(r["corpus_label"]),
+                _DISPLAY.get(sname, sname),
+                _format(m["queries"], 0),
+                _format(m["ndcg_at_10"]),
+                _format(m["mrr_at_10"]),
+                _format(m["recall_at_100"]),
+                _format(m["p50_ms"], 2),
+                _format(m["p95_ms"], 2),
+            ])
+    lines += [_md_table(hdrs, rows), ""]
     return "\n".join(lines)
 
 
-def main() -> None:
+def _load_saved_results(output_dir: Path) -> list[dict]:
+    out = []
+    for p in sorted(output_dir.glob("*.json")):
+        if p.stem == "README":
+            continue
+        try:
+            data = __import__("json").loads(p.read_text(encoding="utf-8"))
+            # Reject results whose label doesn't match their filename.
+            if str(data.get("corpus_label")) == p.stem:
+                out.append(data)
+            else:
+                print(f"Warning: skipping {p.name} — label mismatch")
+        except Exception:
+            print(f"Warning: skipping invalid JSON: {p.name}")
+    return sorted(out, key=lambda r: (r.get("corpus_size", 0), r.get("corpus_label", "")))
+
+
+# ------------------------------------------------------------------ CLI
+
+def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Benchmark retrieval systems.")
-    parser.add_argument("--corpus-label", required=True, help="Example: 750k, 1m, 2m")
-    parser.add_argument("--corpus-size", type=int, required=True, help="Indexed document target")
-    parser.add_argument("--queries", type=Path, default=DATA_DIR / "msmarco" / "queries.dev.small.tsv")
-    parser.add_argument("--qrels", type=Path, default=DATA_DIR / "msmarco" / "qrels.dev.small.tsv")
-    parser.add_argument("--max-queries", type=int, default=500)
-    parser.add_argument("--rerank-queries", type=int, default=100)
-    parser.add_argument("--skip-rerank", action="store_true")
-    parser.add_argument("--output-dir", type=Path, default=project_root / "Benchmark" / "results")
-    args = parser.parse_args()
 
-    queries = load_queries(args.queries)
-    qrels = load_qrels(args.qrels)
-    indexed_doc_ids = load_indexed_doc_ids()
-    eval_queries = filter_eval_queries(queries, qrels, indexed_doc_ids, args.max_queries)
+    # Every input is explicit — no hidden defaults that silently use a wrong file.
+    parser.add_argument("--manifest",      type=Path, required=True,
+                        help="Path to artifact_manifest.json")
+    parser.add_argument("--cohort",        type=Path, required=True,
+                        help="Path to cohort JSON created by Benchmark/cohort.py")
+    parser.add_argument("--queries",       type=Path, required=True,
+                        help="Path to queries TSV (used to validate cohort fingerprint)")
+    parser.add_argument("--qrels",         type=Path, required=True,
+                        help="Path to qrels TSV (used to validate cohort fingerprint)")
+    parser.add_argument("--vector-index",  type=Path, required=True,
+                        help="Path to the FAISS index the API serves")
+    parser.add_argument("--corpus-label",  required=True,
+                        help="Short label for this run, e.g. '1M'")
+    parser.add_argument("--corpus-size",   type=int, required=True,
+                        help="Expected document count in each artifact")
+    parser.add_argument("--sq8-index",     type=Path, default=None,
+                        help="Optional SQ8-compressed FAISS index to validate")
+    parser.add_argument("--rrf-k",         type=int, default=60)
+    parser.add_argument("--repeats",       type=int, default=5,
+                        help="Times to repeat each query for stable latency")
+    parser.add_argument("--rerank-queries", type=int, default=100,
+                        help="Number of cohort queries to use for reranking")
+    parser.add_argument("--skip-rerank",   action="store_true")
+    parser.add_argument("--output-dir",    type=Path,
+                        default=project_root / "Benchmark" / "results")
+    return parser.parse_args()
 
-    print(f"Filtered eval queries: {len(eval_queries)}")
+
+# ------------------------------------------------------------------ main
+
+def main() -> None:
+    args = _parse_args()
+
+    # ---- guards ----
+    manifest = _verify_manifest(args.manifest, args.corpus_size)
+    _verify_artifact_fingerprints(manifest, args.vector_index)
+    if args.sq8_index:
+        _verify_sq8(args.sq8_index, args.corpus_size)
+
+    # ---- cohort ----
+    queries, qrels = load_cohort(args.cohort, args.queries, args.qrels)
+    indexed_ids    = _load_indexed_ids()
+    eval_queries   = _filter_queries(queries, qrels, indexed_ids)
+
     if not eval_queries:
         raise RuntimeError("No eval queries have relevant docs in the current index.")
+    print(f"Cohort: {len(queries)} queries  →  {len(eval_queries)} with relevant docs indexed")
 
-    bm25 = BM25Search()
-    vector = VectorSearch()
+    # ---- load indexes ----
+    bm25   = BM25Search()
+    vector = VectorSearch(index_path=args.vector_index)
     hybrid = HybridSearchEngine(bm25_search=bm25, vector_search=vector)
 
-    systems = {
-        "bm25": evaluate_system(
-            "bm25",
-            lambda query, top_k: bm25.search(query, top_k=top_k),
-            eval_queries,
-            top_k=100,
-        ),
-        "vector": evaluate_system(
-            "vector",
-            lambda query, top_k: vector.search(query, top_k=top_k),
-            eval_queries,
-            top_k=100,
-        ),
-        "hybrid_rrf": evaluate_system(
-            "hybrid_rrf",
-            lambda query, top_k: hybrid.search(query, top_k=top_k),
-            eval_queries,
-            top_k=100,
-        ),
-        "hybrid_rrf_bm25_050_vector_100": evaluate_system(
-            "hybrid_rrf_bm25_050_vector_100",
-            lambda query, top_k: hybrid.search(
-                query,
-                top_k=top_k,
-                bm25_weight=0.50,
-                vector_weight=1.00,
-            ),
-            eval_queries,
-            top_k=100,
-        ),
-        "hybrid_rrf_bm25_025_vector_100": evaluate_system(
-            "hybrid_rrf_bm25_025_vector_100",
-            lambda query, top_k: hybrid.search(
-                query,
-                top_k=top_k,
-                bm25_weight=0.25,
-                vector_weight=1.00,
-            ),
-            eval_queries,
-            top_k=100,
-        ),
-    }
+    # ---- run systems ----
+    systems: dict[str, dict] = {}
+
+    systems["bm25"] = _evaluate_system(
+        "bm25",
+        lambda q, k: bm25.search(q, top_k=k),
+        eval_queries, top_k=100, repeats=args.repeats,
+    )
+    systems["vector"] = _evaluate_system(
+        "vector",
+        lambda q, k: vector.search(q, top_k=k),
+        eval_queries, top_k=100, repeats=args.repeats,
+    )
+    systems["hybrid_rrf"] = _evaluate_system(
+        "hybrid_rrf",
+        lambda q, k: hybrid.search(q, top_k=k, rrf_k=args.rrf_k),
+        eval_queries, top_k=100, repeats=args.repeats,
+    )
+    systems["hybrid_rrf_bm25_050_vector_100"] = _evaluate_system(
+        "hybrid_rrf_bm25_050_vector_100",
+        lambda q, k: hybrid.search(q, top_k=k, bm25_weight=0.50,
+                                   vector_weight=1.00, rrf_k=args.rrf_k),
+        eval_queries, top_k=100, repeats=args.repeats,
+    )
+    systems["hybrid_rrf_bm25_025_vector_100"] = _evaluate_system(
+        "hybrid_rrf_bm25_025_vector_100",
+        lambda q, k: hybrid.search(q, top_k=k, bm25_weight=0.25,
+                                   vector_weight=1.00, rrf_k=args.rrf_k),
+        eval_queries, top_k=100, repeats=args.repeats,
+    )
 
     if not args.skip_rerank:
-        reranker = CrossEncoderReranker()
-        rerank_eval_queries = eval_queries[: args.rerank_queries]
+        reranker       = CrossEncoderReranker()
+        rerank_queries = eval_queries[:args.rerank_queries]
 
-        def rerank_search(query: str, top_k: int) -> list[dict]:
-            candidates = hybrid.search(query, top_k=100)
-            return reranker.rerank(
-                query=query,
-                candidates=candidates,
-                top_k=min(top_k, 10),
-                max_candidates=50,
-            )
+        def _rerank_fn(q: str, k: int) -> list[dict]:
+            candidates = hybrid.search(q, top_k=100, rrf_k=args.rrf_k)
+            return reranker.rerank(query=q, candidates=candidates,
+                                   top_k=min(k, 10), max_candidates=50)
 
-        systems["hybrid_rerank"] = evaluate_system(
-            "hybrid_rerank",
-            rerank_search,
-            rerank_eval_queries,
-            top_k=10,
-            warmup_queries=3,
+        systems["hybrid_rerank"] = _evaluate_system(
+            "hybrid_rerank", _rerank_fn, rerank_queries,
+            top_k=10, repeats=args.repeats, warmup=3,
         )
 
+    # ---- assemble result ----
     result = {
-        "corpus_label": args.corpus_label,
-        "corpus_size": args.corpus_size,
-        "eval_queries": len(eval_queries),
-        "artifact_size_mib": artifact_sizes(),
-        "document_counts": document_counts(),
-        "systems": systems,
+        "schema_version": 1,
+        "corpus_label":   args.corpus_label,
+        "corpus_size":    args.corpus_size,
+        "eval_queries":   len(eval_queries),
+        "document_counts": _document_counts(args.vector_index),
+        "artifact_size_mib": _artifact_sizes(args.vector_index, args.sq8_index),
+        "systems":        systems,
+        "provenance":     _build_provenance(args, manifest, args.cohort),
     }
 
+    # ---- atomic output ----
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = args.output_dir / f"{args.corpus_label}.json"
-    markdown_path = args.output_dir / f"{args.corpus_label}.md"
-    readme_path = args.output_dir / "README.md"
-    result_exists = output_path.exists() or markdown_path.exists()
-    output_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
-    markdown_path.write_text(benchmark_markdown(result), encoding="utf-8")
-    readme_path.write_text(benchmark_readme(load_saved_benchmark_results(args.output_dir)), encoding="utf-8")
-    print(json.dumps(result, indent=2))
-    action = "Updated" if result_exists else "Saved"
-    print(f"{action}: {output_path}")
-    print(f"{action} report: {markdown_path}")
-    print(f"Updated results README: {readme_path}")
+    json_path = args.output_dir / f"{args.corpus_label}.json"
+    md_path   = args.output_dir / f"{args.corpus_label}.md"
+    readme    = args.output_dir / "README.md"
+
+    write_json_atomic(json_path, result)
+    # Write markdown atomically too.
+    tmp_md = md_path.with_suffix(".md.tmp")
+    tmp_md.write_text(_result_to_markdown(result), encoding="utf-8")
+    os.replace(tmp_md, md_path)
+
+    saved = _load_saved_results(args.output_dir)
+    tmp_rm = readme.with_suffix(".md.tmp")
+    tmp_rm.write_text(_readme_markdown(saved), encoding="utf-8")
+    os.replace(tmp_rm, readme)
+
+    print(f"Saved:  {json_path}")
+    print(f"Report: {md_path}")
+    print(f"README: {readme}")
 
 
 if __name__ == "__main__":
