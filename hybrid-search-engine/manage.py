@@ -35,25 +35,108 @@ COMMANDS
 
 EXAMPLES
 --------
-    # Full first-time setup (download data, build everything)
+  Setup & data
+    # Download queries, qrels only (fast)
+    python manage.py download
+
+    # Download queries, qrels AND the full 8M-passage corpus (~3 GB)
+    python manage.py download --include-collection
+
+    # Full first-time setup: download + BM25 + vector (1M passages)
     python manage.py setup --max-docs 1000000
 
-    # Just start the API
+    # Full setup from scratch (wipe existing indexes first)
+    python manage.py setup --max-docs 1000000 --reset
+
+  Indexing
+    # Build BM25 index (1M passages, resume if interrupted)
+    python manage.py index-bm25 --max-docs 1000000
+
+    # Build BM25 index from scratch
+    python manage.py index-bm25 --max-docs 1000000 --reset
+
+    # Build vector index (1M passages)
+    python manage.py index-vector --max-docs 1000000
+
+    # Check vector index progress without indexing
+    python manage.py index-vector --status
+
+    # Build HNSW approximate index from existing FlatIP index
+    python manage.py index-hnsw
+
+    # Build HNSW with custom parameters
+    python manage.py index-hnsw --M 64 --ef-construction 400
+
+    # Compress vector index to SQ8 (smaller, faster)
+    python manage.py quantize
+
+    # Compress to FP16 instead
+    python manage.py quantize --method fp16
+
+    # Wipe all generated artifacts (indexes, docstore, manifest)
+    python manage.py reset --yes
+
+  Serving
+    # Start the API (production mode)
     python manage.py serve
 
-    # Run all tests
+    # Start with auto-reload (development mode)
+    python manage.py serve --reload
+
+    # Bind to all interfaces on a custom port
+    python manage.py serve --host 0.0.0.0 --port 9000
+
+  Testing
+    # Run the full pytest suite
     python manage.py test
 
-    # Build a cohort then benchmark
+    # Verbose output
+    python manage.py test -v
+
+    # Run only docstore tests
+    python manage.py test -k "docstore"
+
+    # Run only fusion and metrics tests
+    python manage.py test -k "fusion or metrics"
+
+    # Hit the live API with a quick smoke query (server must be running)
+    python manage.py smoke
+
+    # Smoke test with a custom query
+    python manage.py smoke --query "how does photosynthesis work"
+
+  Benchmarking
+    # Step 1: create a fixed 500-query evaluation cohort (run once, commit it)
     python manage.py cohort --max-queries 500 --output Benchmark/cohorts/dev500.json
-    python manage.py benchmark --cohort Benchmark/cohorts/dev500.json --corpus-label 1M --corpus-size 1000000
 
-    # ANN experiment
+    # Step 2: run the full benchmark (all systems, 5 repeats per query)
+    python manage.py benchmark \
+        --cohort Benchmark/cohorts/dev500.json \
+        --corpus-label 1M \
+        --corpus-size 1000000
+
+    # Fast benchmark (skip slow cross-encoder reranking)
+    python manage.py benchmark \
+        --cohort Benchmark/cohorts/dev500.json \
+        --corpus-label 1M \
+        --corpus-size 1000000 \
+        --skip-rerank
+
+    # Benchmark with a compressed SQ8 index
+    python manage.py benchmark \
+        --cohort Benchmark/cohorts/dev500.json \
+        --corpus-label 1M \
+        --corpus-size 1000000 \
+        --sq8-index data/indexes/vector.sq8.faiss
+
+    # ANN speed-vs-quality experiment (build HNSW index first)
     python manage.py index-hnsw
-    python manage.py benchmark-ann --cohort Benchmark/cohorts/dev500.json
+    python manage.py benchmark-ann \
+        --cohort Benchmark/cohorts/dev500.json
 
-    # Reset everything and start fresh
-    python manage.py reset --yes
+  Housekeeping
+    # Show index size, document counts, checkpoint, and manifest status
+    python manage.py status
 """
 
 from __future__ import annotations
