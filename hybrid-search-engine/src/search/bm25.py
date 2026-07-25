@@ -21,9 +21,20 @@ WRITER_NUM_THREADS = 1
 class BM25Search:
     """BM25 search engine using Tantivy."""
 
-    def __init__(self, index_path: Path | None = None, reset: bool = False, is_resuming: bool = False):
+    def __init__(
+        self,
+        index_path: Path | None = None,
+        *,
+        docstore: SQLiteDocstore | None = None,
+        create_if_missing: bool = False,
+        reset: bool = False,
+        is_resuming: bool = False,
+    ):
         self.index_path = index_path or BM25_INDEX_PATH
-        self.docstore = SQLiteDocstore()
+        # Accept an injected docstore (e.g. a temp one from a test) or create
+        # the default production store.  Tests pass their own throwaway instance
+        # here so they never touch data/docstore.sqlite.
+        self.docstore = docstore or SQLiteDocstore()
         self.docstore.init()
         self.schema = (
             tantivy.SchemaBuilder()
@@ -62,9 +73,14 @@ class BM25Search:
                     shutil.rmtree(self.index_path)
                     self.index_path.mkdir(parents=True, exist_ok=True)
                     self.index = tantivy.Index(self.schema, path=str(self.index_path))
-        else:
+        elif create_if_missing or reset:
+            # create_if_missing=True is set only by the indexing script.
+            # The server never sets it, so a missing index raises FileNotFoundError
+            # instead of silently creating an empty one.
             self.index_path.mkdir(parents=True, exist_ok=True)
             self.index = tantivy.Index(self.schema, path=str(self.index_path))
+        else:
+            raise FileNotFoundError(f"BM25 index not found: {self.index_path}")
 
     def _create_writer(self):
         """Create a conservative writer for Windows-safe indexing."""
