@@ -52,7 +52,7 @@ class CrossEncoderReranker:
         scores = self.model.predict(
             pairs,
             batch_size=16,
-            show_progress_bar=True,
+            show_progress_bar=False,  # progress bars belong in batch jobs, not web requests
         )
 
         reranked = [

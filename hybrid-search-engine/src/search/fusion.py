@@ -2,6 +2,7 @@
 Reciprocal Rank Fusion (RRF) implementation for combining BM25 and vector results.
 """
 
+import math
 from typing import Any
 
 def reciprocal_rank_fusion(
@@ -12,6 +13,19 @@ def reciprocal_rank_fusion(
     bm25_weight: float = 1.0,
     vector_weight: float = 1.0,
 ) -> list[dict[str, Any]]:
+    # ---- input validation ----
+    if k <= 0:
+        raise ValueError(f"RRF k must be positive (got {k})")
+    if top_k < 0:
+        raise ValueError(f"top_k must be non-negative (got {top_k})")
+    if top_k == 0:
+        return []
+    if not all(math.isfinite(w) and 0 <= w <= 100
+               for w in (bm25_weight, vector_weight)):
+        raise ValueError(
+            "Weights must be finite numbers between 0 and 100 "
+            f"(got bm25_weight={bm25_weight}, vector_weight={vector_weight})"
+        )
     if bm25_weight < 0 or vector_weight < 0:
         raise ValueError("RRF weights must be non-negative.")
     
