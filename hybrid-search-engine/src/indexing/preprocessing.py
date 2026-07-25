@@ -30,9 +30,22 @@ def clean_text(text: str | None) -> str:
     return text.strip()
 
 
-def is_valid_document(title: str | None, body: str | None, min_body_length: int = 20) -> bool:
-    """Check if a document has enough useful content for indexing."""
-    if not title or not title.strip():
+def is_valid_document(
+    title: str | None,
+    body: str | None,
+    min_body_length: int = 20,
+    *,
+    require_title: bool = True,
+) -> bool:
+    """Check if a document has enough useful content for indexing.
+
+    Args:
+        require_title: When True (default), a non-empty title is mandatory.
+            Set to False for title-less corpora such as MS MARCO passages,
+            where the collection has only an id and a body. The body length
+            check always applies — it is the real signal of useful content.
+    """
+    if require_title and (not title or not title.strip()):
         return False
 
     if not body or len(body.strip()) < min_body_length:

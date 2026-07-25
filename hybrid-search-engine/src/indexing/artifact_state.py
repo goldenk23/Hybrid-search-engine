@@ -32,7 +32,17 @@ def sha256_path(path: Path) -> str:
         files = [path]
     else:
         # Sort so the hash is deterministic across OSes and Python versions.
-        files = sorted(p for p in path.rglob("*") if p.is_file())
+        # Skip transient lock files (Tantivy writes *.lock files like
+        # .tantivy-writer.lock / .tantivy-meta.lock). Those are runtime state,
+        # not index content, and Tantivy creates/removes them when the index is
+        # opened. Hashing them makes the fingerprint change between indexing and
+        # serving even when the actual index bytes are identical — which would
+        # make the API refuse to start on a correctly-copied index.
+        files = sorted(
+            p
+            for p in path.rglob("*")
+            if p.is_file() and not p.name.endswith(".lock")
+        )
 
     for file in files:
         # Include the relative path so renaming a file changes the fingerprint.

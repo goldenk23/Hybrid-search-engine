@@ -296,7 +296,14 @@ def build_vector_index(
     print("=" * 70)
 
     from sentence_transformers import SentenceTransformer
-    model = SentenceTransformer(EMBEDDING_MODEL_NAME)
+    # Pass the pinned revision so the exact model weights are reproducible.
+    # Empty string in config means "latest" -> None lets huggingface resolve it.
+    # The query path (src/search/vector.py) pins the same revision, so index-time
+    # and query-time embeddings can never silently drift apart.
+    model = SentenceTransformer(
+        EMBEDDING_MODEL_NAME,
+        revision=EMBEDDING_MODEL_REVISION or None,
+    )
 
     remaining = None if max_documents is None else max_documents - start_count
 

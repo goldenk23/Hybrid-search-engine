@@ -8,7 +8,7 @@ import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-from src.config import EMBEDDING_MODEL_NAME, VECTOR_INDEX_PATH
+from src.config import EMBEDDING_MODEL_NAME, EMBEDDING_MODEL_REVISION, VECTOR_INDEX_PATH
 from src.database.docstore import SQLiteDocstore
 
 
@@ -30,7 +30,13 @@ class VectorSearch:
 
         # Accept an injected model so tests can pass a lightweight fake instead
         # of downloading and loading the full SentenceTransformer.
-        self.model = model or SentenceTransformer(EMBEDDING_MODEL_NAME)
+        # Pin the same revision used at index time (index_vectors.py) so query
+        # embeddings always match the indexed vectors. Empty config -> None ->
+        # huggingface resolves latest, but pinning a hash makes it reproducible.
+        self.model = model or SentenceTransformer(
+            EMBEDDING_MODEL_NAME,
+            revision=EMBEDDING_MODEL_REVISION or None,
+        )
 
         # The FAISS index is loaded lazily (on first search) or built explicitly.
         # IDs are stored inside the index itself via IndexIDMap2 — no sidecar file.

@@ -93,7 +93,9 @@ def load_msmarco_passages(
             # MS MARCO collection.tsv has no title column — two fields only:
             # passage_id and passage_text.  Use empty string rather than faking
             # a title from body[:100], which would store invented metadata.
-            if not is_valid_document(title="", body=cleaned_body):
+            # require_title=False because this corpus is title-less; requiring a
+            # title here would reject every single passage.
+            if not is_valid_document(title="", body=cleaned_body, require_title=False):
                 continue
 
             yield {
@@ -218,6 +220,20 @@ def run_indexing_pipeline(
 
     print(f"\nIndexed {count:,} documents in total.")
     print(f"BM25 index path: {bm25.index_path}")
+
+    # Refuse to declare success on an empty index. If every passage failed
+    # validation (e.g. the title-required bug) or the collection was empty/
+    # misformatted, the writer commits 0 docs and everything downstream silently
+    # returns nothing. Fail loudly here so a broken build is never mistaken for
+    # a finished one — the whole point of "index once, reliably".
+    durable_after = bm25.committed_document_count()
+    if durable_after == 0:
+        raise RuntimeError(
+            "Indexing finished with 0 documents in the BM25 index. "
+            "Every passage was rejected by is_valid_document, or the collection "
+            f"at {collection_path} is empty or misformatted. "
+            "Refusing to leave an empty index. Checkpoint left intact for inspection."
+        )
 
     checkpoint_manager.clear_checkpoint()
 

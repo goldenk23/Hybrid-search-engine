@@ -18,7 +18,22 @@ def test_clean_text_handles_none():
 
 
 def test_is_valid_document_rejects_empty_title():
+    # Default require_title=True: a titled corpus still demands a title.
     assert is_valid_document("", "This body is long enough to be valid.") is False
+
+
+def test_is_valid_document_allows_empty_title_when_not_required():
+    # Title-less corpora (MS MARCO passages) must pass on body alone.
+    # This guards the loader path that rejected 100% of passages before.
+    assert (
+        is_valid_document("", "This body is long enough to be valid.", require_title=False)
+        is True
+    )
+
+
+def test_is_valid_document_rejects_short_body_even_without_title():
+    # Body length is the real signal and always applies, title or not.
+    assert is_valid_document("", "too short", require_title=False) is False
 
 
 def test_is_valid_document_rejects_short_body():
