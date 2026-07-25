@@ -1,5 +1,5 @@
 """
-Vector semantic search using Sentence Transformer and FAISS 
+Vector semantic search using Sentence Transformer and FAISS.
 """
 from pathlib import Path
 from typing import Any
@@ -11,124 +11,126 @@ from sentence_transformers import SentenceTransformer
 from src.config import EMBEDDING_MODEL_NAME, VECTOR_INDEX_PATH
 from src.database.docstore import SQLiteDocstore
 
+
 class VectorSearch:
-    def __init__(self, index_path: Path | None=None):
-        index_path = index_path or VECTOR_INDEX_PATH # stores the FAISS index file that contains embedding vectors and their corresponding document IDs.
-        self.index_path = index_path
-        self.doc_ids_path = index_path.parent / "vector_doc_ids.npy" # stores the mapping of FAISS index positions to document IDs.
-        self.docstore = SQLiteDocstore()
+    def __init__(
+        self,
+        index_path: Path | None = None,
+        *,
+        docstore: SQLiteDocstore | None = None,
+        model: SentenceTransformer | None = None,
+    ):
+        self.index_path = index_path or VECTOR_INDEX_PATH
+
+        # Accept an injected docstore (e.g. a temp one from a test) or create
+        # the default production store.  Tests pass their own throwaway instance
+        # here so they never touch data/docstore.sqlite.
+        self.docstore = docstore or SQLiteDocstore()
         self.docstore.init()
-        self.model = SentenceTransformer(EMBEDDING_MODEL_NAME)
-        
-        self.index: faiss.Index | None=None # FAISS index object for efficient similarity search.
-        self.doc_ids: list[str] =[] # List of document IDs corresponding to the vectors in the FAISS index.
-        
-    def _encode(self, texts: list[str]) ->np.ndarray:
-        """ 
-        converts text into normalized embedding vectors
-        normalization:
-        - enforcing each vector to have magnitude of 1 to ensure cosine simmilarity is equivalent to dot product in FAISS.
-        cosine simmilarity:
-        - two vectors in same direction(similar meaning) will have consine simmilarity close to 1, while orthogonal vectors (diffrent meaning) will have cosine simmilarity close to 0
+
+        # Accept an injected model so tests can pass a lightweight fake instead
+        # of downloading and loading the full SentenceTransformer.
+        self.model = model or SentenceTransformer(EMBEDDING_MODEL_NAME)
+
+        # The FAISS index is loaded lazily (on first search) or built explicitly.
+        # IDs are stored inside the index itself via IndexIDMap2 — no sidecar file.
+        self.index: faiss.Index | None = None
+
+    def _encode(self, texts: list[str]) -> np.ndarray:
+        """
+        Convert texts into L2-normalized float32 embedding vectors.
+
+        Normalization makes each vector have magnitude 1, so inner-product
+        search in FAISS is equivalent to cosine similarity: vectors pointing
+        in the same direction (same meaning) score close to 1.0; orthogonal
+        vectors (different meanings) score close to 0.0.
         """
         embeddings = self.model.encode(
             texts,
             batch_size=64,
             show_progress_bar=True,
             convert_to_numpy=True,
-            normalize_embeddings=True
+            normalize_embeddings=True,
         )
         return embeddings.astype("float32")
-    
-    def build_index(self, documents: list[dict[str, Any]]) ->None:
-        """ 
-        Build FAISS index from documents
-        - documents: list of dicts with keys 'id', 'title', 'body'
-        - combines title and body for embedding
-        - encodes combined text into vectors
-        - adds vectors to FAISS index and saves it to disk
+
+    def build_index(self, documents: list[dict[str, Any]]) -> None:
         """
-        
+        Build a FAISS index from a list of document dicts.
+
+        Each dict must have 'id'; 'title' and 'body' are used for embedding.
+
+        ID system: IndexIDMap2 wraps IndexFlatIP and stores the real MS MARCO
+        passage ID (e.g. 12345) alongside each vector inside FAISS itself.
+        There is no separate doc_ids list or .npy sidecar file — one source of
+        truth means no possible mismatch between the two.
+        """
+        # Fix: "document" (singular) for each item; the old code used "documents"
+        # for both the list parameter and the loop variable — a shadow that caused
+        # .get() to be called on the list object instead of each dict.
         texts = [
-            f"{documents.get('title', '')} {documents.get('body', '')}"
-            for documents in documents
+            f"{document.get('title', '')} {document.get('body', '')}"
+            for document in documents
         ]
-        self.doc_ids = [document.get('id', '') for document in documents]
-        self.docstore.upsert_documents(documents)
-        
+
         embeddings = self._encode(texts)
-        self.index = faiss.IndexFlatIP(embeddings.shape[1])
-        self.index.add(embeddings)
-        """ 
-        FAISS index:
-        -IndexFlatIP: A simple index that performs inner product search (suitable for cosine similarity with normalized vectors).
-        Observation:
-        faiss index looks like:{
-            postion1: vector1, # corresponds to doc_ids[0]
-            postion2: vector2, # corresponds to doc_ids[1]
-        }
-        doc_ids looks like:[
-            "doc_id1", # corresponds to position1 in FAISS index
-            "doc_id2", # corresponds to position2 in FAISS index
-        ]
-        this is mapping between FAISS index positions and document IDs, allowing us to retrieve the original document ID after performing a search.
-        """
+
+        # Extract numeric IDs as int64 — FAISS IndexIDMap2 requires int64.
+        ids = np.asarray(
+            [int(document["id"]) for document in documents], dtype=np.int64
+        )
+
+        # IndexFlatIP: exact inner-product (cosine) search over all vectors.
+        # IndexIDMap2: wrapper that attaches our real passage IDs to each vector
+        # so FAISS returns them directly instead of positional 0,1,2… integers.
+        base = faiss.IndexFlatIP(embeddings.shape[1])
+        self.index = faiss.IndexIDMap2(base)
+        self.index.add_with_ids(embeddings, ids)
+
+        self.docstore.upsert_documents(documents)
         self.save()
-        
-    def save(self) ->None:
-        """ Save FAISS index and document IDs to disk from RAM """
+
+    def save(self) -> None:
+        """Persist the FAISS index to disk."""
         if self.index is None:
             raise ValueError("Cannot save index: index is not built yet.")
-        
-        self.index_path.parent.mkdir(parents=True, exist_ok=True) # Ensure the directory exists ->this code creates the parent directory for the index file if it doesn't already exist.
-        faiss.write_index(self.index, str(self.index_path)) # Save the FAISS index to disk using the specified path.
-        np.save(self.doc_ids_path, np.array(self.doc_ids)) # Save the document IDs as a NumPy array to disk.
-        
-    def load(self) ->None:
-        """ Load FAISS index and document IDs from disk """
+
+        self.index_path.parent.mkdir(parents=True, exist_ok=True)
+        faiss.write_index(self.index, str(self.index_path))
+        # The old np.save(doc_ids_path, ...) line is intentionally gone.
+        # IDs live inside the IndexIDMap2 — no sidecar .npy file needed.
+
+    def load(self) -> None:
+        """Load the FAISS index from disk."""
         if not self.index_path.exists():
             raise FileNotFoundError(f"Vector index not found: {self.index_path}")
 
         self.index = faiss.read_index(str(self.index_path))
+        # The old .npy sidecar load block is intentionally gone.
+        # IDs are stored inside the IndexIDMap2 and come back from .search()
+        # directly — no parallel list to keep in sync.
 
-        # Small development indexes use a sidecar position -> doc_id mapping.
-        # Full MS MARCO indexes are built with faiss.IndexIDMap2, so FAISS
-        # returns passage IDs directly and this sidecar file is not required.
-        if self.doc_ids_path.exists():
-            self.doc_ids = np.load(self.doc_ids_path).tolist()
-        else:
-            self.doc_ids = []
-    
-    def search(self, query: str, top_k: int) ->list[dict[str, Any]]:
-        """ Search simmantically simmilar documents for a query"""
-        
+    def search(self, query: str, top_k: int) -> list[dict[str, Any]]:
+        """Return the top_k semantically closest documents for a query."""
         if self.index is None:
             self.load()
+
         query_embedding = self._encode([query])
-        
-        doc_ids = []
-        scores_by_id = {}
-        
-        score, indices = self.index.search(query_embedding, top_k)
-        """ 
-        FAISS score and indices looks like:
-        score: [[0.9, 0.8, 0.7]] # similarity scores for top_k results
-        indices: [[0, 1, 2]] # corresponding FAISS index positions for top_k results
-        so using score[0] and indices[0] we get the scores and index positions for our single query, which we can then map back to document IDs using self.doc_ids.
-        """
-        for score, indx_position in zip(score[0], indices[0]):
-            
-            if indx_position ==-1:
-                continue # FAISS may return empty positions if insufficient results exist.
 
-            if self.doc_ids:
-                doc_id = self.doc_ids[indx_position]
-            else:
-                doc_id = str(int(indx_position))
+        # scores shape: (1, top_k)  — similarity scores for our single query
+        # faiss_ids shape: (1, top_k) — the real passage IDs stored in IndexIDMap2
+        scores, faiss_ids = self.index.search(query_embedding, top_k)
 
-            doc_id = str(doc_id)
+        doc_ids: list[str] = []
+        scores_by_id: dict[str, float] = {}
+
+        for similarity, faiss_id in zip(scores[0], faiss_ids[0]):
+            if faiss_id == -1:
+                # FAISS pads with -1 when fewer than top_k results exist.
+                continue
+            doc_id = str(int(faiss_id))  # int() drops the int64 type; str() for dict key
             doc_ids.append(doc_id)
-            scores_by_id[doc_id] = float(score)
+            scores_by_id[doc_id] = float(similarity)
 
         docs_by_id = self.docstore.get_documents_by_ids(doc_ids)
 
@@ -137,7 +139,6 @@ class VectorSearch:
             document = docs_by_id.get(doc_id)
             if document is None:
                 continue
-
             results.append(
                 {
                     "id": doc_id,

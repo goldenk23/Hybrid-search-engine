@@ -121,9 +121,10 @@ def clear_checkpoint(checkpoint_path: Path) -> None:
 
 
 def remove_index(index_path: Path) -> None:
-    """Remove the existing vector index file if present."""
-    if index_path.exists():
-        index_path.unlink()
+    """Remove the vector index file and the legacy doc-IDs sidecar if present."""
+    index_path.unlink(missing_ok=True)
+    # Delete the old position→doc_id sidecar; IDs now live inside IndexIDMap2.
+    (index_path.parent / "vector_doc_ids.npy").unlink(missing_ok=True)
 
 
 def create_faiss_index(dimension: int) -> faiss.Index:
