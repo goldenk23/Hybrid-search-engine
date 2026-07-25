@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import argparse
 import gc
+import os
 import sys
 import time
 import uuid
@@ -165,10 +166,20 @@ def add_batch_to_index(
     index.add_with_ids(embeddings, ids)
 
 
-def save_index(index: faiss.Index, index_path: Path) -> None:
-    """Persist the FAISS index to disk."""
+def save_index_atomic(index: faiss.Index, index_path: Path) -> None:
+    """Persist the FAISS index to disk without risk of a partial write.
+
+    Strategy: write to a sibling .tmp file, then os.replace() it into place.
+    os.replace() is atomic — the live file is either the old complete version
+    or the new complete version, never a half-written mix of both.
+    If the process dies mid-write the .tmp is harmless and will be overwritten
+    on the next attempt.
+    """
     index_path.parent.mkdir(parents=True, exist_ok=True)
-    faiss.write_index(index, str(index_path))
+    temporary = index_path.with_suffix(index_path.suffix + ".tmp")
+    temporary.unlink(missing_ok=True)           # remove stale temp from prior crash
+    faiss.write_index(index, str(temporary))
+    os.replace(temporary, index_path)           # instant atomic swap
 
 
 # ------------------------------------------------------------------ manifest helpers
@@ -295,6 +306,7 @@ def build_vector_index(
     )
 
     count = start_count
+    last_saved_count = start_count   # track how many docs were saved at last checkpoint
     last_document_id: str | None = skip_until_id
     batch_texts: list[str] = []
     batch_ids: list[str] = []
@@ -321,9 +333,13 @@ def build_vector_index(
             batch_texts.clear()
             batch_ids.clear()
 
-            if count % save_every == 0:
+            # Save when we've accumulated at least save_every *new* docs since
+            # the last save.  Using a delta (count - last_saved_count) instead
+            # of modulo (count % save_every) means we save reliably even when
+            # the batch size doesn't divide evenly into save_every.
+            if count - last_saved_count >= save_every:
                 print(f"\nSaving checkpoint at {count:,} documents…")
-                save_index(index, index_path)
+                save_index_atomic(index, index_path)
                 save_checkpoint(
                     checkpoint_path,
                     total_documents_indexed=count,
@@ -332,6 +348,7 @@ def build_vector_index(
                     index_path=index_path,
                     model_name=EMBEDDING_MODEL_NAME,
                 )
+                last_saved_count = count
                 print(f"  FAISS ntotal: {index.ntotal:,}")
                 gc.collect()
 
@@ -348,7 +365,7 @@ def build_vector_index(
             raise RuntimeError("No documents were indexed.")
 
         print(f"\nFinal save at {count:,} documents…")
-        save_index(index, index_path)
+        save_index_atomic(index, index_path)
         save_checkpoint(
             checkpoint_path,
             total_documents_indexed=count,
@@ -402,7 +419,7 @@ def build_vector_index(
         print(f"\nInterrupted or failed: {exc}")
         if index is not None and last_document_id is not None:
             print(f"Saving recoverable checkpoint at {count:,} documents…")
-            save_index(index, index_path)
+            save_index_atomic(index, index_path)
             save_checkpoint(
                 checkpoint_path,
                 total_documents_indexed=count,

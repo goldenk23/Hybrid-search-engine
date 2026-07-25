@@ -162,12 +162,10 @@ def run_indexing_pipeline(
     checkpoint = None
     skip_until_id = None
     start_count = 0
-    is_resuming = False
 
     if resume and not reset:
         checkpoint = checkpoint_manager.load_checkpoint()
         if checkpoint:
-            is_resuming = True
             print("\nCheckpoint found:")
             print(f"   Collection: {checkpoint['collection_path']}")
             print(f"   Previously indexed: {checkpoint['total_documents_indexed']:,} documents")
@@ -188,7 +186,7 @@ def run_indexing_pipeline(
     # The old code computed max(max_documents - start_count, 0) and passed 0 as
     # remaining, but that fell through to load_msmarco_passages where 0 was
     # treated as "no limit" due to the truthiness bug now fixed above.
-    bm25 = BM25Search(reset=reset, is_resuming=is_resuming)
+    bm25 = BM25Search(reset=reset)
     durable_count = bm25.committed_document_count()
 
     if max_documents is not None and durable_count >= max_documents:

@@ -28,7 +28,6 @@ class BM25Search:
         docstore: SQLiteDocstore | None = None,
         create_if_missing: bool = False,
         reset: bool = False,
-        is_resuming: bool = False,
     ):
         self.index_path = index_path or BM25_INDEX_PATH
         # Accept an injected docstore (e.g. a temp one from a test) or create
@@ -55,24 +54,15 @@ class BM25Search:
         if self.index_path.exists():
             try:
                 self.index = tantivy.Index.open(str(self.index_path))
-            except (ValueError, Exception) as e:
-                # Index directory exists but is corrupted/incomplete
-                if is_resuming:
-                    # If resuming from checkpoint, this is a critical error - don't auto-fix
-                    print(f"ERROR opening existing index: {e}")
-                    print(f"   Index path: {self.index_path}")
-                    print(f"   To fix: use --reset flag to delete and recreate index")
-                    raise RuntimeError(
-                        f"Failed to open index at {self.index_path}. "
-                        "Use --reset flag to delete and recreate the index."
-                    ) from e
-                else:
-                    # Starting fresh with corrupted index dir - auto-recover by deleting and recreating
-                    import shutil
-                    print("WARNING: Index directory corrupted but not resuming - recreating fresh index...")
-                    shutil.rmtree(self.index_path)
-                    self.index_path.mkdir(parents=True, exist_ok=True)
-                    self.index = tantivy.Index(self.schema, path=str(self.index_path))
+            except Exception as exc:
+                # The index directory exists but is unreadable or corrupt.
+                # Always raise — never silently delete and recreate.
+                # Silently recreating hides the problem, wipes indexing work,
+                # and can produce a mismatched artifact set.
+                # Use --reset (or reset_all.py) to wipe and start over deliberately.
+                raise RuntimeError(
+                    f"Unreadable BM25 index: {self.index_path}"
+                ) from exc
         elif create_if_missing or reset:
             # create_if_missing=True is set only by the indexing script.
             # The server never sets it, so a missing index raises FileNotFoundError
