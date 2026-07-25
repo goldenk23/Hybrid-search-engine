@@ -5,6 +5,7 @@ from typing import Any
 
 from src.config import DOCSTORE_PATH
 
+# Just making small comment
 
 class SQLiteDocstore:
     """SQLite-backed document store with optional read-only mode."""
