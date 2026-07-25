@@ -39,10 +39,22 @@ RERANK_TOP_K = int(os.getenv("RERANK_TOP_K", "50"))
 RESULTS_PER_PAGE = int(os.getenv("RESULTS_PER_PAGE", "10"))
 
 EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+# Pinned HuggingFace commit hash for the embedding model.  Empty string means
+# "latest" — set this env var to lock a specific revision for reproducibility.
+EMBEDDING_MODEL_REVISION = os.getenv("EMBEDDING_MODEL_REVISION", "")
+
 CROSS_ENCODER_MODEL_NAME = os.getenv(
     "CROSS_ENCODER_MODEL",
     "cross-encoder/ms-marco-MiniLM-L-6-v2",
 )
+# Same as above for the cross-encoder reranker.
+CROSS_ENCODER_MODEL_REVISION = os.getenv("CROSS_ENCODER_MODEL_REVISION", "")
+
+# Bump this integer whenever you change text cleaning or validation logic in
+# src/indexing/preprocessing.py.  A changed version makes the manifest
+# detect that the index was built with different preprocessing and refuse
+# to resume against mismatched artifacts.
+PREPROCESSING_VERSION = "1"
 LTR_MODEL_PATH = MODELS_DIR / "ltr" / "lambdamart.txt"
 INTENT_MODEL_PATH = MODELS_DIR / "intent" / "intent_classifier.bin"
 
