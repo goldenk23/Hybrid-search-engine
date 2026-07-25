@@ -1,0 +1,34 @@
+# Version control
+.git
+.gitignore
+
+# Python virtual environments
+.venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+.pytest_cache
+.ruff_cache
+
+# Generated artifacts — mount these as read-only volumes at runtime
+data
+models
+
+# Benchmark results (large, not needed in image)
+Benchmark/results
+
+# SQLite and FAISS files (mounted at runtime)
+*.sqlite
+*.faiss
+*.npy
+
+# Development / editor files
+*.env
+.env.*
+*.log
+.DS_Store
+Thumbs.db
+
+# Jupyter
+*.ipynb
+.ipynb_checkpoints

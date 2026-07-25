@@ -36,14 +36,6 @@ def ensure_build_directories() -> None:
     for path in (DATA_DIR, MODELS_DIR, INDEX_DIR):
         path.mkdir(parents=True, exist_ok=True)
 
-POSTGRES_URL = os.getenv(
-    "POSTGRES_URL",
-    "postgresql://search_user:search_password@localhost:5432/search_engine",
-)
-ASYNC_POSTGRES_URL = POSTGRES_URL.replace("postgresql://", "postgresql+asyncpg://")
-
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-
 BM25_TOP_K = int(os.getenv("BM25_TOP_K", "100"))
 VECTOR_TOP_K = int(os.getenv("VECTOR_TOP_K", "100"))
 RERANK_TOP_K = int(os.getenv("RERANK_TOP_K", "50"))
@@ -66,11 +58,6 @@ CROSS_ENCODER_MODEL_REVISION = os.getenv("CROSS_ENCODER_MODEL_REVISION", "")
 # detect that the index was built with different preprocessing and refuse
 # to resume against mismatched artifacts.
 PREPROCESSING_VERSION = "1"
-LTR_MODEL_PATH = MODELS_DIR / "ltr" / "lambdamart.txt"
-INTENT_MODEL_PATH = MODELS_DIR / "intent" / "intent_classifier.bin"
-
-CACHE_TTL_SECONDS = int(os.getenv("CACHE_TTL", "300"))
-
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
 API_PORT = int(os.getenv("API_PORT", "8000"))
 

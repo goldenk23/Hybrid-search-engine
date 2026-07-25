@@ -1,7 +1,7 @@
 [project]
 name = "hybrid-search-engine"
 version = "0.1.0"
-description = "A hybrid neural search engine with BM25, vector search, cross-encoder re-ranking, and learned ranking"
+description = "A hybrid neural search engine with BM25, vector search, and cross-encoder reranking"
 requires-python = ">=3.11"
 
 dependencies = [
@@ -16,52 +16,54 @@ dependencies = [
     # Vector search
     "faiss-cpu>=1.7.4",
 
-    # Embeddings & re-ranking
+    # Embeddings & reranking
     "sentence-transformers>=2.3.0",
     "torch>=2.1.0",
 
-    # Learning-to-Rank
-    "lightgbm>=4.2.0",
-
     # Query understanding
     "symspellpy>=6.7.7",
-    "nltk>=3.8.1",
-
-    # Database
-    "sqlalchemy>=2.0.25",
-    "asyncpg>=0.29.0",
-    "psycopg2-binary>=2.9.9",
-
-    # Cache
-    "redis>=5.0.1",
 
     # Data processing
     "numpy>=1.26.0",
-    "pandas>=2.1.0",
     "tqdm>=4.66.0",
 
     # Utilities
     "python-dotenv>=1.0.0",
-    "httpx>=0.26.0",
 ]
 
 [project.optional-dependencies]
+# Observability — install with: pip install -e ".[metrics]"
+# prometheus_client is optional; the API degrades gracefully if absent.
+metrics = [
+    "prometheus-client>=0.20.0",
+]
+
 dev = [
     "pytest>=7.4.0",
-    "pytest-asyncio>=0.23.0",
-    "ruff>=0.1.14",        # Fast Python linter
+    "httpx>=0.26.0",       # FastAPI TestClient
+    "ruff>=0.1.14",        # Linter
     "locust>=2.20.0",      # Load testing
-    "jupyter>=1.0.0",
-    "matplotlib>=3.8.0",
-    "scikit-learn>=1.4.0",  # For evaluation metrics
 ]
+
+# Removed from core (were declared but never used in application code):
+#   lightgbm        — LTR model never built
+#   sqlalchemy      — replaced by SQLite docstore
+#   asyncpg         — no async Postgres
+#   psycopg2-binary — no Postgres at all
+#   redis           — no caching layer
+#   nltk            — not used
+#   pandas          — not used in application code (only in old notebooks)
+#
+# Removed from dev:
+#   pytest-asyncio  — no async tests
+#   jupyter         — not part of CI or tests
+#   matplotlib      — not part of CI or tests
+#   scikit-learn    — metrics are in src/evaluation/metrics.py (stdlib only)
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
 
 [tool.pytest.ini_options]
-# Only collect tests from tests/ — prevents pytest from picking up scripts/test_*.py
-# and triggering real indexing during a test run.
 testpaths = ["tests"]
 python_files = ["test_*.py"]
