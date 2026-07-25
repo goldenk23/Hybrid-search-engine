@@ -22,6 +22,7 @@ def load_msmarco_passages(
     collection_path: Path,
     max_documents: int | None = None,
     skip_until_id: str | None = None,
+    skip_documents: int = 0,
 ) -> Generator[dict, None, None]:
     # Generator that yields document dictionaries with keys: 'id', 'title', 'body', 'category'
     # Format: Generator[YieldType, SendType, ReturnType]
@@ -33,65 +34,83 @@ def load_msmarco_passages(
 
     Expected format:
         passage_id<TAB>passage_text
-        
+
     Args:
         collection_path: Path to collection.tsv file
-        max_documents: Maximum documents to load
+        max_documents: Maximum documents to yield. None = no limit.
+                       0 = yield nothing (zero means zero, not unlimited).
+                       Negative values raise ValueError.
         skip_until_id: Skip all documents until this ID is found (for resume)
+        skip_documents: Number of valid documents to skip from the start
     """
+    # --- explicit guards: check before touching the file ---
+
+    if max_documents is not None and max_documents < 0:
+        raise ValueError(f"max_documents cannot be negative (got {max_documents})")
+    if skip_documents < 0:
+        raise ValueError(f"skip_documents cannot be negative (got {skip_documents})")
+
+    # Zero means zero: caller wants nothing indexed, return immediately.
+    # The old code used `if max_documents:` which treated 0 as "no limit" —
+    # that could silently index the entire 8M-passage corpus.
+    if max_documents == 0:
+        return
+
     count = 0
     skipping = skip_until_id is not None
     skipped_large = 0
-    skipped_errors = 0
-    
+
     with collection_path.open("r", encoding="utf-8", newline="") as file:
-        # Manual TSV parsing line-by-line (avoids CSV field size limit issues)
         for line in file:
             line = line.rstrip("\n\r")
-            
-            # Split on first tab to get ID and text
+
             if "\t" not in line:
                 continue
-            
-            parts = line.split("\t", 1)  # Split on first tab only
+
+            parts = line.split("\t", 1)
             if len(parts) < 2:
                 continue
-            
+
             passage_id, passage_text = parts[0], parts[1]
-            
+
             # Resume logic: skip until we reach the last indexed document
             if skipping:
                 if passage_id == skip_until_id:
                     skipping = False
                     print(f"  Resuming from document ID: {passage_id}")
                 continue
-            
-            # Skip documents that are too large (>5GB) to avoid memory issues
-            # Most documents should be much smaller; this catches pathological cases
-            max_size_bytes = 5 * 1024 * 1024 * 1024  # 5GB
+
+            # Skip documents that are too large to avoid memory issues
+            max_size_bytes = 5 * 1024 * 1024 * 1024  # 5 GB
             if len(passage_text) > max_size_bytes:
                 skipped_large += 1
                 size_mb = len(passage_text) / 1024 / 1024
-                print(f"  Warning: Skipping oversized document {passage_id} ({size_mb:.1f}MB)")
+                print(f"  Warning: Skipping oversized document {passage_id} ({size_mb:.1f} MB)")
                 continue
-            
+
             cleaned_body = clean_text(passage_text)
-            title = cleaned_body[:100]  # Use the first 100 characters as a title
-            if not is_valid_document(title=title, body=cleaned_body):
+
+            # MS MARCO collection.tsv has no title column — two fields only:
+            # passage_id and passage_text.  Use empty string rather than faking
+            # a title from body[:100], which would store invented metadata.
+            if not is_valid_document(title="", body=cleaned_body):
                 continue
+
             yield {
                 "id": passage_id,
-                "title": title,
+                "title": "",           # no title in MS MARCO collection.tsv
                 "body": cleaned_body,
                 "category": "msmarco",
             }
             count += 1
-            if max_documents and count >= max_documents:
+
+            # Explicit None check: `if max_documents:` would treat 0 as falsy
+            # and skip the limit — we already handled 0 above, but being
+            # explicit here makes every future reader's life easier.
+            if max_documents is not None and count >= max_documents:
                 if skipped_large > 0:
                     print(f"  Skipped {skipped_large} oversized documents")
                 return
-
-
 
 
 def run_indexing_pipeline(
@@ -114,10 +133,12 @@ def run_indexing_pipeline(
     2. Load raw passages (resume from last checkpoint if applicable)
     3. Clean and validate them
     4. Build the BM25 index with periodic checkpoints
-    
+
     Args:
         collection_path: Path to collection.tsv (defaults to data/msmarco/collection.tsv)
-        max_documents: Maximum documents to index (None = all)
+        max_documents: Target total to reach. None = index everything.
+                       Treated as a final target, not "how many more to add" —
+                       so if start_count already meets the target, return early.
         reset: Delete existing index before reindexing (default: False)
         resume: Resume from checkpoint if available (default: True)
     """
@@ -127,22 +148,22 @@ def run_indexing_pipeline(
     if not collection_path.exists():
         raise FileNotFoundError(
             f"Collection file not found: {collection_path}\n"
-            "create a small test collection or download the full MS MARCO collection using the provided script."
+            "Create a small test collection or download the full MS MARCO collection "
+            "using the provided script."
         )
-    
+
     # Initialize checkpoint manager
     checkpoint_manager = IndexCheckpoint(INDEX_DIR / "bm25")
-    
+
     print("=" * 70)
     print("STARTING RESUMABLE INDEXING PIPELINE")
     print("=" * 70)
 
-    # Check for existing checkpoint
     checkpoint = None
     skip_until_id = None
     start_count = 0
     is_resuming = False
-    
+
     if resume and not reset:
         checkpoint = checkpoint_manager.load_checkpoint()
         if checkpoint:
@@ -162,20 +183,32 @@ def run_indexing_pipeline(
     else:
         print("\nResume disabled - starting fresh indexing\n")
 
+    # Early-return: if we already have at least as many documents as the target,
+    # there is nothing to do — don't open the collection file or build a writer.
+    # The old code computed max(max_documents - start_count, 0) and passed 0 as
+    # remaining, but that fell through to load_msmarco_passages where 0 was
+    # treated as "no limit" due to the truthiness bug now fixed above.
+    bm25 = BM25Search(reset=reset, is_resuming=is_resuming)
+    durable_count = bm25.committed_document_count()
+
+    if max_documents is not None and durable_count >= max_documents:
+        print(
+            f"\nAlready have {durable_count:,} documents (target: {max_documents:,}). "
+            "Nothing to do."
+        )
+        return bm25
+
+    # remaining is how many more we need on top of what's durably indexed.
+    remaining = None if max_documents is None else max_documents - durable_count
+
     print("[1/2] Streaming and indexing passages...")
-    bm25 = BM25Search(reset=reset, is_resuming=is_resuming)  # Pass both flags
 
-    remaining_documents = max_documents
-    if max_documents is not None:
-        remaining_documents = max(max_documents - start_count, 0)
-
-    # Load documents - can resume from checkpoint
     passages = load_msmarco_passages(
         collection_path,
-        remaining_documents,
+        max_documents=remaining,
         skip_until_id=skip_until_id,
     )
-    
+
     count = bm25.add_documents_stream_with_checkpoint(
         passages,
         checkpoint_manager,
@@ -187,10 +220,9 @@ def run_indexing_pipeline(
 
     print(f"\nIndexed {count:,} documents in total.")
     print(f"BM25 index path: {bm25.index_path}")
-    
-    # Clear checkpoint after successful completion
+
     checkpoint_manager.clear_checkpoint()
-    
+
     print("\nIndexing complete!")
     print("=" * 70)
 
