@@ -9,59 +9,39 @@ SAFE STAGED USAGE (RECOMMENDED):
 
 Stage 1: Test with small dataset and reset (10K documents)
     python scripts/index_vectors.py --collection data/msmarco/collection.tsv --max-docs 10000 --reset
-    - Validates embedding pipeline and index creation
-    - Clears any previous indexing state
-    - Tests the full checkpoint/resume flow
 
-Stage 2: Medium dataset with resume enabled (100K documents)
+Stage 2: Medium dataset (100K documents)
     python scripts/index_vectors.py --collection data/msmarco/collection.tsv --max-docs 100000
-    - Resume automatically continues from last checkpoint
-    - If interrupted, re-run same command to resume
-    - Verifies checkpointing works correctly at scale
 
-Stage 3: Large dataset with resume (1M documents)
+Stage 3: Large dataset (1M documents)
     python scripts/index_vectors.py --collection data/msmarco/collection.tsv --max-docs 1000000
-    - Resume continues from previous checkpoint
-    - Can be interrupted and resumed safely
 
-Full Corpus Indexing (all documents, no limit):
+Full corpus (no limit):
     python scripts/index_vectors.py --collection data/msmarco/collection.tsv
-    - Indexes entire collection.tsv
-    - Resume automatic; safe to restart on interruption
 
-MONITORING AND STATUS:
-=======================
+If interrupted, re-run the same command — it resumes safely from the last checkpoint.
+To start completely over, add --reset.
 
-Check progress without indexing:
+MONITORING:
+===========
+
     python scripts/index_vectors.py --status
-    - Shows: index file size, total documents indexed, last document ID, timestamp
-
-ADVANCED OPTIONS:
-==================
-
-Reset and start over (delete index and checkpoint):
-    python scripts/index_vectors.py --collection data/msmarco/collection.tsv --reset
-
-Ignore checkpoint and continue from start (without deletion):
-    python scripts/index_vectors.py --collection data/msmarco/collection.tsv --no-resume
-
-Custom batch sizes (for memory tuning):
-    python scripts/index_vectors.py --batch-size 256 --encode-batch-size 32
 
 OUTPUT FILES:
 ==============
 
-    data/indexes/vector.faiss           - FAISS index (persisted incrementally)
-    data/indexes/vector_checkpoint.json - Resumption metadata with progress info
+    data/indexes/vector.faiss              — FAISS index
+    data/indexes/vector_checkpoint.json    — resumption metadata
+    data/indexes/artifact_manifest.json    — build receipt (generation ID, counts, fingerprints)
 """
 
 from __future__ import annotations
 
 import argparse
 import gc
-import json
 import sys
 import time
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -72,21 +52,38 @@ from tqdm import tqdm
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.config import DATA_DIR, EMBEDDING_MODEL_NAME, INDEX_DIR
+from src.config import (
+    DATA_DIR,
+    DOCSTORE_PATH,
+    EMBEDDING_MODEL_NAME,
+    EMBEDDING_MODEL_REVISION,
+    INDEX_DIR,
+    PREPROCESSING_VERSION,
+    VECTOR_INDEX_PATH,
+    BM25_INDEX_PATH,
+)
+from src.database.docstore import SQLiteDocstore
+from src.indexing.artifact_state import (
+    load_json_required,
+    reconcile_count,
+    sha256_path,
+    write_json_atomic,
+)
 from src.indexing.pipeline import load_msmarco_passages
 
 
 DEFAULT_INDEX_PATH = INDEX_DIR / "vector.faiss"
 DEFAULT_CHECKPOINT_PATH = INDEX_DIR / "vector_checkpoint.json"
+DEFAULT_MANIFEST_PATH = INDEX_DIR / "artifact_manifest.json"
 
+
+# ------------------------------------------------------------------ checkpoint
 
 def load_checkpoint(checkpoint_path: Path) -> dict[str, Any] | None:
     """Load vector indexing checkpoint metadata if it exists."""
     if not checkpoint_path.exists():
         return None
-
-    with checkpoint_path.open("r", encoding="utf-8") as file:
-        return json.load(file)
+    return load_json_required(checkpoint_path)
 
 
 def save_checkpoint(
@@ -99,8 +96,6 @@ def save_checkpoint(
     model_name: str,
 ) -> None:
     """Save progress only after the FAISS index has been written to disk."""
-    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
-
     payload = {
         "total_documents_indexed": total_documents_indexed,
         "last_document_id": last_document_id,
@@ -109,16 +104,15 @@ def save_checkpoint(
         "model_name": model_name,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
-
-    with checkpoint_path.open("w", encoding="utf-8") as file:
-        json.dump(payload, file, indent=2)
+    write_json_atomic(checkpoint_path, payload)
 
 
 def clear_checkpoint(checkpoint_path: Path) -> None:
     """Remove checkpoint metadata if present."""
-    if checkpoint_path.exists():
-        checkpoint_path.unlink()
+    checkpoint_path.unlink(missing_ok=True)
 
+
+# ------------------------------------------------------------------ index ops
 
 def remove_index(index_path: Path) -> None:
     """Remove the vector index file and the legacy doc-IDs sidecar if present."""
@@ -131,9 +125,9 @@ def create_faiss_index(dimension: int) -> faiss.Index:
     """
     Create an exact cosine-similarity index.
 
-    Embeddings are normalized by SentenceTransformer, so inner product is
-    equivalent to cosine similarity. IndexIDMap2 stores MS MARCO passage IDs
-    directly inside FAISS, avoiding a huge Python doc_ids mapping.
+    Embeddings are L2-normalised by SentenceTransformer, so inner product ==
+    cosine similarity.  IndexIDMap2 stores MS MARCO passage IDs directly
+    inside FAISS, so there is no separate doc_ids sidecar to go out of sync.
     """
     base_index = faiss.IndexFlatIP(dimension)
     return faiss.IndexIDMap2(base_index)
@@ -144,7 +138,7 @@ def encode_texts(
     texts: list[str],
     encode_batch_size: int,
 ) -> np.ndarray:
-    """Encode and normalize one batch of document texts."""
+    """Encode and L2-normalise one batch of document texts."""
     embeddings = model.encode(
         texts,
         batch_size=encode_batch_size,
@@ -162,13 +156,12 @@ def add_batch_to_index(
 ) -> None:
     """Add one embedding batch to FAISS using numeric MS MARCO passage IDs."""
     try:
-        ids = np.array([int(document_id) for document_id in document_ids], dtype=np.int64)
+        ids = np.array([int(did) for did in document_ids], dtype=np.int64)
     except ValueError as exc:
         raise ValueError(
             "Full vector indexing expects numeric document IDs. "
             "MS MARCO collection.tsv uses numeric passage IDs."
         ) from exc
-
     index.add_with_ids(embeddings, ids)
 
 
@@ -178,83 +171,140 @@ def save_index(index: faiss.Index, index_path: Path) -> None:
     faiss.write_index(index, str(index_path))
 
 
+# ------------------------------------------------------------------ manifest helpers
+
+def _manifest_identity(collection_path: Path) -> dict:
+    """Return the fields that must stay constant across a resume."""
+    return {
+        "collection_sha256": sha256_path(collection_path),
+        "preprocessing_version": PREPROCESSING_VERSION,
+        "embedding_model": EMBEDDING_MODEL_NAME,
+        "embedding_revision": EMBEDDING_MODEL_REVISION,
+        "vector_id_mode": "faiss_id_map_2",
+    }
+
+
+def _validate_resume_manifest(manifest: dict, collection_path: Path) -> None:
+    """Raise RuntimeError if the manifest identity doesn't match current config."""
+    current = _manifest_identity(collection_path)
+    mismatches = {
+        key: {"stored": manifest.get(key), "current": current[key]}
+        for key in current
+        if manifest.get(key) != current[key]
+    }
+    if mismatches:
+        raise RuntimeError(
+            f"Cannot resume: manifest identity mismatch: {mismatches}. "
+            "Use --reset to start a new build."
+        )
+
+
+# ------------------------------------------------------------------ main build
+
 def build_vector_index(
     *,
     collection_path: Path,
     index_path: Path = DEFAULT_INDEX_PATH,
     checkpoint_path: Path = DEFAULT_CHECKPOINT_PATH,
+    manifest_path: Path = DEFAULT_MANIFEST_PATH,
     max_documents: int | None = None,
     batch_size: int = 800,
     encode_batch_size: int = 90,
     save_every: int = 50_000,
     reset: bool = False,
-    resume: bool = True,
 ) -> faiss.Index:
     """Build or resume a full MS MARCO vector index."""
     if not collection_path.exists():
         raise FileNotFoundError(f"Collection file not found: {collection_path}")
 
     if reset:
-        print("RESET requested: removing vector index and checkpoint")
+        print("RESET requested: removing vector index, checkpoint, and manifest")
         remove_index(index_path)
         clear_checkpoint(checkpoint_path)
+        manifest_path.unlink(missing_ok=True)
 
-    checkpoint = load_checkpoint(checkpoint_path) if resume and not reset else None
+    # ---- decide: fresh build or resume? ----
+
+    manifest: dict | None = None
     start_count = 0
-    skip_until_id = None
+    skip_until_id: str | None = None
     index: faiss.Index | None = None
 
-    if checkpoint:
-        start_count = int(checkpoint["total_documents_indexed"])
-        skip_until_id = checkpoint["last_document_id"]
-        print("Checkpoint found:")
-        print(f"  Previously indexed: {start_count:,}")
-        print(f"  Last document ID: {skip_until_id}")
+    if manifest_path.exists():
+        # A manifest exists — this is a resume.  Validate identity before touching anything.
+        manifest = load_json_required(manifest_path)
+        _validate_resume_manifest(manifest, collection_path)
+
+        checkpoint = load_checkpoint(checkpoint_path)
+        checkpoint_count = (
+            int(checkpoint["total_documents_indexed"]) if checkpoint else 0
+        )
 
         if index_path.exists():
-            print(f"Loading existing vector index: {index_path}")
             index = faiss.read_index(str(index_path))
-            print(f"  FAISS ntotal: {index.ntotal:,}")
+            durable_count = index.ntotal
         else:
-            raise FileNotFoundError(
-                f"Checkpoint exists but vector index is missing: {index_path}. "
-                "Use --reset to start over."
-            )
+            durable_count = 0
+
+        # reconcile_count raises if checkpoint is ahead of the durable index.
+        start_count = reconcile_count(checkpoint_count, durable_count)
+        skip_until_id = checkpoint.get("last_document_id") if checkpoint else None
+
+        print(f"Resuming build (generation {manifest['generation_id'][:8]}…)")
+        print(f"  Durable vectors: {durable_count:,}  |  checkpoint: {checkpoint_count:,}")
+        print(f"  Resuming from: {start_count:,}")
+
+        # Already at or past the target — nothing to do.
+        if max_documents is not None and start_count >= max_documents:
+            print(f"Already have {start_count:,} documents (target: {max_documents:,}). Nothing to do.")
+            return index
+
+    else:
+        # Fresh build — stamp the receipt before the first write.
+        manifest = {
+            "schema_version": 1,
+            "generation_id": str(uuid.uuid4()),
+            "status": "building",
+            "target_documents": max_documents,
+            **_manifest_identity(collection_path),
+        }
+        write_json_atomic(manifest_path, manifest)
+        print(f"New build (generation {manifest['generation_id'][:8]}…)")
 
     print("=" * 70)
     print("STARTING VECTOR INDEXING")
     print("=" * 70)
-    print(f"Collection: {collection_path}")
-    print(f"Index path: {index_path}")
-    print(f"Model: {EMBEDDING_MODEL_NAME}")
-    print(f"Batch size: {batch_size}")
-    print(f"Encode batch size: {encode_batch_size}")
-    print(f"Save every: {save_every:,} documents")
+    print(f"Collection:        {collection_path}")
+    print(f"Index path:        {index_path}")
+    print(f"Model:             {EMBEDDING_MODEL_NAME}")
+    print(f"Preprocessing ver: {PREPROCESSING_VERSION}")
+    print(f"Batch size:        {batch_size}")
+    print(f"Encode batch:      {encode_batch_size}")
+    print(f"Save every:        {save_every:,} documents")
     print("=" * 70)
 
     from sentence_transformers import SentenceTransformer
-
     model = SentenceTransformer(EMBEDDING_MODEL_NAME)
 
-    remaining_documents = max_documents
-    if max_documents is not None and start_count:
-        remaining_documents = max(max_documents - start_count, 0)
+    remaining = None if max_documents is None else max_documents - start_count
 
     passages = load_msmarco_passages(
         collection_path=collection_path,
-        max_documents=remaining_documents,
+        max_documents=remaining,
         skip_until_id=skip_until_id,
     )
 
     count = start_count
-    last_document_id = skip_until_id
+    last_document_id: str | None = skip_until_id
     batch_texts: list[str] = []
     batch_ids: list[str] = []
 
     try:
-        for document in tqdm(passages, desc="Vector indexing", total=remaining_documents):
+        for document in tqdm(passages, desc="Vector indexing", total=remaining):
             batch_ids.append(str(document["id"]))
-            batch_texts.append(f"{document.get('title', '')} {document.get('body', '')}")
+            batch_texts.append(
+                f"{document.get('title', '')} {document.get('body', '')}"
+            )
 
             if len(batch_texts) < batch_size:
                 continue
@@ -272,7 +322,7 @@ def build_vector_index(
             batch_ids.clear()
 
             if count % save_every == 0:
-                print(f"\nSaving checkpoint at {count:,} documents...")
+                print(f"\nSaving checkpoint at {count:,} documents…")
                 save_index(index, index_path)
                 save_checkpoint(
                     checkpoint_path,
@@ -282,24 +332,22 @@ def build_vector_index(
                     index_path=index_path,
                     model_name=EMBEDDING_MODEL_NAME,
                 )
-                print(f"  Saved FAISS ntotal: {index.ntotal:,}")
+                print(f"  FAISS ntotal: {index.ntotal:,}")
                 gc.collect()
 
+        # flush the last partial batch
         if batch_texts:
             embeddings = encode_texts(model, batch_texts, encode_batch_size)
-
             if index is None:
                 index = create_faiss_index(embeddings.shape[1])
-
             add_batch_to_index(index, embeddings, batch_ids)
-
             count += len(batch_texts)
             last_document_id = batch_ids[-1]
 
         if index is None:
             raise RuntimeError("No documents were indexed.")
 
-        print(f"\nFinal save at {count:,} documents...")
+        print(f"\nFinal save at {count:,} documents…")
         save_index(index, index_path)
         save_checkpoint(
             checkpoint_path,
@@ -311,12 +359,49 @@ def build_vector_index(
         )
         print(f"Vector indexing complete. FAISS ntotal: {index.ntotal:,}")
 
+        # ---- finalize manifest ----
+        # Collect counts from all three artifacts and verify they agree.
+        docstore = SQLiteDocstore(DOCSTORE_PATH, read_only=True)
+        counts = {
+            "vector": index.ntotal,
+            "docstore": docstore.count_documents(),
+        }
+        # BM25 count is optional at this stage — only checked when the index exists.
+        if BM25_INDEX_PATH.exists():
+            try:
+                import tantivy
+                bm25_index = tantivy.Index.open(str(BM25_INDEX_PATH))
+                counts["bm25"] = bm25_index.searcher().num_docs
+            except Exception as exc:
+                print(f"Warning: could not read BM25 count: {exc}")
+
+        unique_counts = set(counts.values())
+        if len(unique_counts) != 1:
+            print(
+                f"Warning: artifact counts disagree: {counts}. "
+                "Run index_documents.py first, or rebuild both together."
+            )
+        else:
+            print(f"Artifact counts agree: {counts}")
+
+        manifest.update({
+            "status": "complete",
+            "counts": counts,
+            "artifact_sha256": {
+                "vector": sha256_path(index_path),
+                "docstore": sha256_path(DOCSTORE_PATH),
+                **({"bm25": sha256_path(BM25_INDEX_PATH)} if BM25_INDEX_PATH.exists() else {}),
+            },
+        })
+        write_json_atomic(manifest_path, manifest)
+        print(f"Manifest finalized: {manifest_path}")
+
         return index
 
     except (Exception, KeyboardInterrupt) as exc:
         print(f"\nInterrupted or failed: {exc}")
         if index is not None and last_document_id is not None:
-            print(f"Saving recoverable checkpoint at {count:,} documents...")
+            print(f"Saving recoverable checkpoint at {count:,} documents…")
             save_index(index, index_path)
             save_checkpoint(
                 checkpoint_path,
@@ -330,34 +415,46 @@ def build_vector_index(
         raise
 
 
-def print_status(index_path: Path, checkpoint_path: Path) -> None:
-    """Print current vector index/checkpoint status."""
-    checkpoint = load_checkpoint(checkpoint_path)
+# ------------------------------------------------------------------ status
 
+def print_status(
+    index_path: Path,
+    checkpoint_path: Path,
+    manifest_path: Path,
+) -> None:
+    """Print current vector index / checkpoint / manifest status."""
     print("=" * 70)
     print("VECTOR INDEX STATUS")
     print("=" * 70)
-    print(f"Index path: {index_path}")
-    print(f"Index exists: {index_path.exists()}")
+    print(f"Index path:    {index_path}  (exists: {index_path.exists()})")
 
     if index_path.exists():
-        index = faiss.read_index(str(index_path))
-        print(f"FAISS ntotal: {index.ntotal:,}")
+        idx = faiss.read_index(str(index_path))
+        print(f"FAISS ntotal:  {idx.ntotal:,}")
 
-    if checkpoint:
-        print(f"Checkpoint documents: {checkpoint['total_documents_indexed']:,}")
-        print(f"Last document ID: {checkpoint['last_document_id']}")
-        print(f"Model: {checkpoint['model_name']}")
-        print(f"Timestamp: {checkpoint['timestamp']}")
+    if checkpoint_path.exists():
+        cp = load_json_required(checkpoint_path)
+        print(f"Checkpoint:    {cp['total_documents_indexed']:,} docs  |  last id: {cp['last_document_id']}  |  {cp['timestamp']}")
     else:
-        print("Checkpoint: none")
+        print("Checkpoint:    none")
+
+    if manifest_path.exists():
+        mf = load_json_required(manifest_path)
+        print(f"Manifest:      status={mf.get('status')}  generation={mf.get('generation_id', '')[:8]}…")
+        if "counts" in mf:
+            print(f"  Counts:      {mf['counts']}")
+    else:
+        print("Manifest:      none")
 
     print("=" * 70)
 
 
+# ------------------------------------------------------------------ CLI
+
 def parse_args() -> argparse.Namespace:
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Build a FAISS vector index for MS MARCO.")
+    parser = argparse.ArgumentParser(
+        description="Build a FAISS vector index for MS MARCO."
+    )
     parser.add_argument(
         "--collection",
         type=Path,
@@ -377,10 +474,16 @@ def parse_args() -> argparse.Namespace:
         help="Vector checkpoint JSON path",
     )
     parser.add_argument(
+        "--manifest-path",
+        type=Path,
+        default=DEFAULT_MANIFEST_PATH,
+        help="Artifact manifest JSON path",
+    )
+    parser.add_argument(
         "--max-docs",
         type=int,
         default=None,
-        help="Maximum documents to index for testing",
+        help="Maximum documents to index",
     )
     parser.add_argument(
         "--batch-size",
@@ -403,13 +506,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--reset",
         action="store_true",
-        help="Delete existing vector index and checkpoint before indexing",
+        help="Delete existing index, checkpoint, and manifest before indexing",
     )
-    parser.add_argument(
-        "--no-resume",
-        action="store_true",
-        help="Ignore checkpoint and continue from the start without deleting index",
-    )
+    # --no-resume is intentionally removed: resuming from row 1 while keeping
+    # an existing index would double-index documents.  Use --reset to start over.
     parser.add_argument(
         "--status",
         action="store_true",
@@ -419,23 +519,22 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
-    """CLI entry point."""
     args = parse_args()
 
     if args.status:
-        print_status(args.index_path, args.checkpoint_path)
+        print_status(args.index_path, args.checkpoint_path, args.manifest_path)
         return
 
     build_vector_index(
         collection_path=args.collection,
         index_path=args.index_path,
         checkpoint_path=args.checkpoint_path,
+        manifest_path=args.manifest_path,
         max_documents=args.max_docs,
         batch_size=args.batch_size,
         encode_batch_size=args.encode_batch_size,
         save_every=args.save_every,
         reset=args.reset,
-        resume=not args.no_resume,
     )
 
 

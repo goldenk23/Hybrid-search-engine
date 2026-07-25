@@ -32,18 +32,7 @@ WORKING EXAMPLES:
    - On crash → resumes from the latest successful checkpoint
 
 
-3. START FRESH (IGNORE CHECKPOINT, KEEP INDEX)
-   ============================================
-   python scripts/index_documents.py --collection data/msmarco/collection.tsv --no-resume
-   
-   Behavior:
-   - Ignores any existing checkpoint
-   - Continues adding documents to existing index
-   - Useful when you have partial index and want fresh start
-   - Does NOT delete checkpoint or index
-
-
-4. COMPLETE RESET (DELETE CHECKPOINT + INDEX + START FRESH)
+3. COMPLETE RESET (DELETE CHECKPOINT + INDEX + START FRESH)
    =========================================================
    python scripts/index_documents.py --collection data/msmarco/collection.tsv --reset
    
@@ -113,11 +102,6 @@ def main() -> None:
         help="Delete existing index and checkpoints before reindexing (start completely fresh)",
     )
     parser.add_argument(
-        "--no-resume",
-        action="store_true",
-        help="Don't resume from checkpoint - start fresh but keep the index",
-    )
-    parser.add_argument(
         "--status",
         action="store_true",
         help="Show checkpoint status without indexing",
@@ -141,13 +125,11 @@ def main() -> None:
             print("\nNo checkpoint found.")
         return
 
-    resume = not args.no_resume  # Default to resuming unless --no-resume is passed
-
     bm25 = run_indexing_pipeline(
         collection_path=args.collection,
         max_documents=args.max_docs,
         reset=args.reset,
-        resume=resume,
+        resume=True,
     )
 
     print("\n" + "=" * 70)
