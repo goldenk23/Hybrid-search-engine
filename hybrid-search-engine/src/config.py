@@ -65,6 +65,10 @@ API_PORT = int(os.getenv("API_PORT", "8000"))
 # Disabled by default — the model is large and slow to load.
 ENABLE_RERANKER = os.getenv("ENABLE_RERANKER", "false").lower() == "true"
 
+# Production containers fail closed if artifacts or embedding provenance are incomplete.
+# Local development remains compatible with indexes created before revision pinning.
+REQUIRE_PINNED_ARTIFACTS = os.getenv("REQUIRE_PINNED_ARTIFACTS", "false").lower() == "true"
+
 # Comma-separated list of allowed CORS origins.
 # Example: CORS_ORIGINS=https://myapp.com,https://staging.myapp.com
 _cors_env = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")

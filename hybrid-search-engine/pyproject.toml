@@ -60,6 +60,17 @@ dev = [
 #   matplotlib      — not part of CI or tests
 #   scikit-learn    — metrics are in src/evaluation/metrics.py (stdlib only)
 
+# The default PyPI torch wheels for Linux drag in ~3 GiB of nvidia/CUDA runtime
+# libraries. This deploys to a CPU-only instance that never loads them, and they
+# were large enough to exhaust the 30 GiB root volume during image export.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"

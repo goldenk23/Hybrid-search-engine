@@ -120,3 +120,6 @@ coverage.xml
 
 # Linux
 .nfs*
+
+# Local production deployment state (configs, artifacts, AWS keys) — never commit
+/deployment/

@@ -1,935 +1,431 @@
-# Hybrid Search Engine - Complete Usage Guide
+# Hybrid Search Engine — End-to-End Guide
 
-This document contains complete, working code examples for all major components of the Hybrid Search Engine project.
+This guide takes you from installation to a working UI, API checks, tests, indexing, and benchmarking.
 
----
+## What runs
 
-## **Starting the Application**
+- **Backend:** FastAPI on `http://localhost:8000`
+- **Frontend:** Next.js on `http://localhost:3000`
+- **Storage:** SQLite docstore plus Tantivy BM25 and FAISS vector indexes
 
-### **Start the Backend**
+PostgreSQL and Redis are **not used**. If the existing indexes are complete, you do not need to rebuild them.
 
-Run from the `hybrid-search-engine` directory. Wait for `Application startup complete.` before opening the frontend.
+## 1. Prerequisites
+
+Install:
+
+- Python 3.11 or newer
+- Node.js and [pnpm](https://pnpm.io/installation)
+- Git
+
+Open PowerShell in the repository root.
+
+## 2. Install the backend
 
 ```powershell
-cd hybrid-search-engine
-.\.venv\Scripts\python.exe -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+Set-Location .\hybrid-search-engine
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev,metrics]"
 ```
 
-### **Start the Frontend**
-
-Run from the `hybrid-search-engine-frontend` directory in a second terminal.
+Verify the existing artifacts:
 
 ```powershell
-cd hybrid-search-engine-frontend
+.\.venv\Scripts\python.exe manage.py status
+```
+
+For the checked-in local artifacts, the manifest should be `complete` and BM25, vector, and docstore counts should each be **1,499,977**.
+
+## 3. Start the platform
+
+### Terminal 1 — backend
+
+From `hybrid-search-engine`:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py serve
+```
+
+Wait for `Application startup complete`. The first start can take longer while models load or download.
+Check their status:
+
+```powershell
+Set-Location ..\hybrid-search-engine
+.\.venv\Scripts\python.exe manage.py status
+```
+
+The current manifest should report `status=complete` and matching BM25, vector, and docstore counts. This repository's current generation contains **1,499,977 documents**.
+
+If the artifacts already exist and match, skip to the next section. Otherwise, follow [Build or rebuild the indexes](#build-or-rebuild-the-indexes).
+
+## 4. Start and test the platform
+
+Use two PowerShell terminals. Initial backend startup can take time while indexes and models load.
+
+### Terminal 1 — backend
+
+```powershell
+Set-Location 'C:\Users\golde\Desktop\Projects\Hybrid_search_engine\hybrid-search-engine'
+.\.venv\Scripts\python.exe manage.py serve --reload
+```
+
+Wait until Uvicorn reports that application startup is complete. Then verify readiness from another terminal:
+
+```powershell
+Invoke-RestMethod 'http://127.0.0.1:8000/health/ready'
+```
+
+Expected response: `status: ready`.
+
+Useful backend URLs:
+
+- Swagger UI: <http://127.0.0.1:8000/docs>
+- Liveness: <http://127.0.0.1:8000/health/live>
+- Readiness: <http://127.0.0.1:8000/health/ready>
+- Prometheus metrics, when installed: <http://127.0.0.1:8000/metrics>
+
+### Terminal 2 — frontend
+
+```powershell
+Set-Location 'C:\Users\golde\Desktop\Projects\Hybrid_search_engine\hybrid-search-engine-frontend'
+$env:NEXT_PUBLIC_API_BASE_URL='http://127.0.0.1:8000'
+pnpm dev
+```
+
+Open <http://localhost:3000>.
+
+### End-to-end UI check
+
+1. Enter a query such as **what causes rain**.
+2. Try **Keyword** and confirm results appear.
+3. Try **Hybrid** and adjust BM25/vector weights.
+4. Confirm result count, latency, snippets, and corrected query display correctly.
+5. Try **Reranked** only after enabling the reranker as described below.
+
+## 5. Test the API directly
+
+All search endpoints are `GET` requests. Queries must contain 3–256 characters.
+
+```powershell
+# BM25 keyword search
+Invoke-RestMethod 'http://127.0.0.1:8000/search?q=what%20causes%20rain&top_k=10'
+
+# BM25 + vector search using Reciprocal Rank Fusion (RRF)
+Invoke-RestMethod 'http://127.0.0.1:8000/hybrid-search?q=what%20causes%20rain&top_k=10&bm25_weight=1&vector_weight=1&rrf_k=60'
+
+# Include full passage bodies (off by default)
+Invoke-RestMethod 'http://127.0.0.1:8000/hybrid-search?q=what%20causes%20rain&top_k=3&include_body=true'
+```
+
+Every response includes `query`, `corrected_query`, `returned_count`, `latency_ms`, and `results`. Keyword results have `score`; hybrid results include RRF, BM25, vector scores, and source ranks.
+To enable cross-encoder reranking, set the flag **before** starting the backend:
+
+```powershell
+$env:ENABLE_RERANKER = "true"
+.\.venv\Scripts\python.exe manage.py serve
+```
+
+### Terminal 2 — frontend
+
+From the repository root:
+
+```powershell
+Set-Location .\hybrid-search-engine-frontend
 pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Then open **http://localhost:3000** in your browser.
+Open `http://localhost:3000`. API documentation is at `http://localhost:8000/docs`.
 
-> The backend must be running before the frontend can return results.
-> API docs are available at **http://localhost:8000/docs** once the backend is up.
+The frontend uses `http://localhost:8000` by default. To use another backend:
 
----
-
-## Table of Contents
-
-1. [API Usage](#api-usage)
-2. [Python Module Usage](#python-module-usage)
-3. [CLI Scripts](#cli-scripts)
-4. [Configuration](#configuration)
-5. [Development Workflow](#development-workflow)
-6. [Database Operations](#database-operations)
-7. [Caching](#caching)
-8. [Testing](#testing)
-
----
-
-## API Usage
-
-### Starting the API Server
-
-```bash
-# Basic startup
-python -m uvicorn src.api.main:app --reload
-
-# With custom host and port
-python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
-
-# Production mode (no reload)
-python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+```powershell
+$env:NEXT_PUBLIC_API_BASE_URL = "http://localhost:9000"
+pnpm dev
 ```
 
-### API Documentation
+## 4. Verify the API
 
-Once the server is running:
-- **Interactive Documentation (Swagger UI)**: http://127.0.0.1:8000/docs
-- **Alternative Documentation (ReDoc)**: http://127.0.0.1:8000/redoc
+Run these in another PowerShell terminal:
 
-### API Endpoints
+```powershell
+# Process is alive
+Invoke-RestMethod "http://localhost:8000/health/live"
 
-#### 1. Health Check
+# Search artifacts are loaded and ready
+Invoke-RestMethod "http://localhost:8000/health/ready"
 
-```bash
-# Using curl
-curl http://127.0.0.1:8000/health
+# BM25 keyword search
+Invoke-RestMethod "http://localhost:8000/search?q=machine%20learning&top_k=3"
 
-# Response:
-# {
-#   "status": "ok",
-#   "service": "hybrid-search-engine"
-# }
+# BM25 + vector search with Reciprocal Rank Fusion (RRF)
+Invoke-RestMethod "http://localhost:8000/hybrid-search?q=machine%20learning&top_k=3"
+
+# Hybrid candidates rescored by the cross-encoder; requires ENABLE_RERANKER=true
+Invoke-RestMethod "http://localhost:8000/hybrid-search/rerank?q=machine%20learning&top_k=3&candidates_k=100"
 ```
 
-#### 2. Search Endpoint
+Add `| ConvertTo-Json -Depth 6` to any command for formatted JSON.
 
-```bash
-# Basic search with default parameters
-curl "http://127.0.0.1:8000/search?q=python"
+### Search endpoints
 
-# Search with custom number of results
-curl "http://127.0.0.1:8000/search?q=python&top_k=20"
+| Mode | Endpoint | Purpose |
+| --- | --- | --- |
+| Keyword | `GET /search` | Fast exact-term BM25 retrieval |
+| Hybrid | `GET /hybrid-search` | Fuse BM25 and semantic vector candidates |
+| Reranked | `GET /hybrid-search/rerank` | Hybrid retrieval followed by cross-encoder rescoring |
 
-# Search with multiple words
-curl "http://127.0.0.1:8000/search?q=machine%20learning&top_k=10"
+All endpoints use URL query parameters, not a JSON request body. Common parameters are:
 
-# URL-encoded query (spaces as %20)
-curl "http://127.0.0.1:8000/search?q=data%20science%20tutorial&top_k=15"
+- `q`: required query, 3–256 characters
+- `top_k`: number of results; default 10
+- `include_body=true`: include full passage bodies (omitted by default)
+- Hybrid/reranked: `bm25_weight`, `vector_weight`, and `rrf_k`
+- Reranked: `candidates_k` must be at least `top_k`
+
+Responses contain `query`, `corrected_query`, `returned_count`, `latency_ms`, and `results`.
+## 5. Test through the UI
+
+At `http://localhost:3000`:
+
+1. Search for `how does photosynthesis work`.
+2. Try **Keyword**, **Hybrid**, and **Reranked** modes.
+3. Confirm results, result count, and latency appear.
+4. Change `top_k` and the BM25/vector weights, then search again.
+5. If reranking returns `503`, restart the backend with `ENABLE_RERANKER=true`.
+
+## 6. Build indexes only when needed
+
+> Skip this section when `manage.py status` reports complete artifacts. Indexing 1.5 million passages is time- and disk-intensive.
+
+To download MS MARCO and build BM25 followed by the vector index:
+
+```powershell
+Set-Location .\hybrid-search-engine
+.\.venv\Scripts\python.exe manage.py setup --max-docs 1500000
 ```
 
-#### Response Format
+If the corpus already exists, build or resume each stage explicitly:
 
-```json
-{
-  "query": "python",
-  "total": 3,
-  "latency_ms": 45,
-  "results": [
-    {
-      "id": "doc_001",
-      "title": "Python Programming Basics",
-      "body": "Learn Python programming from scratch using variables loops and functions.",
-      "category": "programming",
-      "score": 12.5,
-      "snippet": "Learn Python programming from scratch using variables loops and..."
-    },
-    {
-      "id": "doc_002",
-      "title": "Python Data Science Guide",
-      "body": "Use Python for data analysis with pandas numpy and matplotlib.",
-      "category": "data",
-      "score": 10.3,
-      "snippet": "Use Python for data analysis with pandas numpy and matplotlib."
-    }
-  ]
-}
+```powershell
+.\.venv\Scripts\python.exe manage.py index-bm25 --max-docs 1500000
+.\.venv\Scripts\python.exe manage.py index-vector --max-docs 1500000
+.\.venv\Scripts\python.exe manage.py status
 ```
 
-#### Using Python Requests Library
+Always run vector indexing after BM25; it finalizes the artifact manifest and verifies that all document counts agree. Interrupted indexing resumes when the same command is rerun.
 
-```python
-import requests
+## 7. Run checks
 
-# Basic search
-response = requests.get(
-    "http://127.0.0.1:8000/search",
-    params={
-        "q": "python programming",
-        "top_k": 10
-    }
-)
+Backend checks, from `hybrid-search-engine`:
 
-results = response.json()
-print(f"Query: {results['query']}")
-print(f"Total results: {results['total']}")
-print(f"Latency: {results['latency_ms']}ms")
-
-for result in results['results']:
-    print(f"  - {result['title']} (score: {result['score']})")
-
-# Health check
-health = requests.get("http://127.0.0.1:8000/health")
-print(health.json())
+```powershell
+.\.venv\Scripts\python.exe manage.py test
+.\.venv\Scripts\python.exe -m ruff check src tests scripts Benchmark
 ```
 
----
+Frontend checks, from `hybrid-search-engine-frontend`:
 
-## Python Module Usage
-
-### BM25 Search Module
-
-```python
-from pathlib import Path
-from src.search.bm25 import BM25Search
-
-# Initialize BM25 search with default index location
-bm25 = BM25Search()
-
-# Initialize with custom index path
-custom_index_path = Path("my_custom_index")
-bm25 = BM25Search(index_path=custom_index_path)
-
-# Add documents to index
-documents = [
-    {
-        "id": "1",
-        "title": "Python Programming Tutorial",
-        "body": "Learn Python programming from scratch using variables loops and functions.",
-        "category": "programming",
-    },
-    {
-        "id": "2",
-        "title": "JavaScript Web Development",
-        "body": "Build modern web applications using JavaScript React and Node.",
-        "category": "web",
-    },
-    {
-        "id": "3",
-        "title": "Python Data Science Guide",
-        "body": "Use Python for data analysis with pandas numpy and matplotlib.",
-        "category": "data",
-    },
-]
-
-# Add all documents
-bm25.add_documents(documents)
-
-# Add documents with custom batch size
-bm25.add_documents(documents, batch_size=5000)
-
-# Search the index
-results = bm25.search(query="python", top_k=10)
-
-# Print results
-for result in results:
-    print(f"ID: {result['id']}")
-    print(f"Title: {result['title']}")
-    print(f"Body: {result['body']}")
-    print(f"Category: {result['category']}")
-    print(f"Score: {result['score']}")
-    print("---")
+```powershell
+pnpm lint
+pnpm build
 ```
 
-### Text Preprocessing Module
+A quick check against an already-running backend is also available:
 
-```python
-from src.indexing.preprocessing import clean_text, is_valid_document, generate_snippet
-
-# Clean raw text
-raw_text = "<p>Hello & goodbye</p>    Multiple   spaces"
-cleaned = clean_text(raw_text)
-print(cleaned)  # Output: "Hello & goodbye Multiple spaces"
-
-# Handle None values
-result = clean_text(None)
-print(result)  # Output: ""
-
-# Validate documents before indexing
-title = "Machine Learning Basics"
-body = "This is a comprehensive guide to machine learning concepts and algorithms."
-
-is_valid = is_valid_document(title, body, min_body_length=20)
-print(is_valid)  # Output: True
-
-# Check invalid document
-invalid_title = ""
-is_valid = is_valid_document(invalid_title, body)
-print(is_valid)  # Output: False
-
-# Generate snippets for display
-body_text = "Python is a versatile programming language. It's used for web development, data science, machine learning, and more. Python is known for its simplicity and readability."
-query = "Python"
-snippet = generate_snippet(body_text, query, snippet_length=200)
-print(snippet)  
-# Output: "Python is a versatile programming language. It's used for web development, data science, machine learning, and more..."
+```powershell
+.\.venv\Scripts\python.exe manage.py smoke --query "how does photosynthesis work"
 ```
 
-### Indexing Pipeline Module
+## 8. Run the reproducible 1.5M benchmark
 
-```python
-from pathlib import Path
-from src.indexing.pipeline import load_msmarco_passages, run_indexing_pipeline
+The fixed cohort and current 1,499,977-document artifacts are already present. From `hybrid-search-engine`, run:
 
-# Load passages from MS MARCO collection
-collection_path = Path("data/msmarco/collection.tsv")
-
-# Load first 1000 passages
-documents = load_msmarco_passages(collection_path, max_documents=1000)
-
-# Process loaded documents
-for doc in documents:
-    print(f"ID: {doc['id']}, Title: {doc['title']}")
-
-# Run full indexing pipeline with default settings
-# (uses data/msmarco/collection.tsv by default)
-bm25 = run_indexing_pipeline()
-
-# Run pipeline with custom collection and document limit
-custom_collection = Path("data/msmarco/custom_collection.tsv")
-bm25 = run_indexing_pipeline(
-    collection_path=custom_collection,
-    max_documents=50000
-)
-
-# Test the index with a search
-results = bm25.search("python programming", top_k=5)
-print(f"Found {len(results)} results")
+```powershell
+.\.venv\Scripts\python.exe Benchmark\benchmark_retrieval.py `
+  --manifest data\indexes\artifact_manifest.json `
+  --cohort Benchmark\cohorts\dev1000.json `
+  --queries data\msmarco\queries.dev.small.tsv `
+  --qrels data\msmarco\qrels.dev.small.tsv `
+  --vector-index data\indexes\vector.faiss `
+  --sq8-index data\indexes\vector.sq8.faiss `
+  --corpus-label 1.5M `
+  --corpus-size 1499977 `
+  --repeats 5 `
+  --rerank-queries 200 `
+  --output-dir Benchmark\results
 ```
 
-### Configuration Module
+### Enable cross-encoder reranking
 
-```python
-from src.config import (
-    PROJECT_ROOT,
-    DATA_DIR,
-    MODELS_DIR,
-    INDEX_DIR,
-    POSTGRES_URL,
-    REDIS_URL,
-    BM25_TOP_K,
-    VECTOR_TOP_K,
-    RERANK_TOP_K,
-    RESULTS_PER_PAGE,
-    EMBEDDING_MODEL_NAME,
-    CROSS_ENCODER_MODEL_NAME,
-    CACHE_TTL_SECONDS,
-    API_HOST,
-    API_PORT,
-)
+Reranking is disabled by default because it loads an additional model and is slower. Stop the backend, then restart it in the same terminal with:
 
-# Access configuration values
-print(f"Project Root: {PROJECT_ROOT}")
-print(f"Data Directory: {DATA_DIR}")
-print(f"Index Directory: {INDEX_DIR}")
-print(f"PostgreSQL URL: {POSTGRES_URL}")
-print(f"Redis URL: {REDIS_URL}")
-print(f"BM25 Top K: {BM25_TOP_K}")
-print(f"Results Per Page: {RESULTS_PER_PAGE}")
-print(f"Embedding Model: {EMBEDDING_MODEL_NAME}")
-print(f"Cache TTL: {CACHE_TTL_SECONDS} seconds")
-print(f"API Host: {API_HOST}")
-print(f"API Port: {API_PORT}")
-
-# All configuration values are read from environment variables
-# If not set, they use sensible defaults (shown above)
+```powershell
+$env:ENABLE_RERANKER='true'
+.\.venv\Scripts\python.exe manage.py serve --reload
 ```
 
----
+Test it after readiness succeeds:
 
-## CLI Scripts
-
-### Index Documents Script
-
-```bash
-# Index using default collection (data/msmarco/collection.tsv)
-python scripts/index_documents.py
-
-# Index with custom collection path
-python scripts/index_documents.py --collection data/msmarco/custom_collection.tsv
-
-# Index first 1000 documents
-python scripts/index_documents.py --max-docs 1000
-
-# Index custom collection with document limit
-python scripts/index_documents.py --collection data/msmarco/collection.tsv --max-docs 500000
-
-# View script help
-python scripts/index_documents.py --help
+```powershell
+Invoke-RestMethod 'http://127.0.0.1:8000/hybrid-search/rerank?q=what%20causes%20rain&top_k=10&candidates_k=100'
 ```
 
-Expected output:
-```
-============================================================
-starting indexing pipeline
-============================================================
+The reranker first retrieves `candidates_k` hybrid candidates, then returns the best `top_k`. `candidates_k` must be at least `top_k`. Only one rerank request runs at a time; concurrent requests can receive HTTP 429.
 
-[1/2] loading and processing passages...
-Processing passages: 100%|████████| 1000/1000 [00:05<00:00, 198.76it/s]
-Loaded 1,000 valid documents.
+## 6. Build or rebuild the indexes
 
-[2/2] building BM25 index...
-  Indexed 1,000 documents...
+Only do this when artifacts are missing, stale, or intentionally being replaced. Building 1.5 million vector embeddings is a long-running, compute-heavy operation. Indexers save checkpoints, so rerunning the same command resumes interrupted work.
 
-Indexing complete.
-BM25 index path: /path/to/data/indexes/bm25
+### One-command setup
 
-Smoke test:
-1. Where is Patna? | score=8.45
-2. Patna India History | score=7.23
-3. Patna Tourism Guide | score=6.89
+This downloads MS MARCO and builds both indexes:
+
+```powershell
+Set-Location 'C:\Users\golde\Desktop\Projects\Hybrid_search_engine\hybrid-search-engine'
+.\.venv\Scripts\python.exe manage.py setup --max-docs 1500000
 ```
 
-### Initialize Database Script
+The first run downloads the corpus (about 3 GB) and Hugging Face model files.
 
-```bash
-# Initialize database (create tables)
-python scripts/init_db.py
+### Run stages separately
+
+```powershell
+# Download queries, qrels, and the passage collection
+.\.venv\Scripts\python.exe manage.py download --include-collection
+
+# Build/resume BM25, then vector indexing
+.\.venv\Scripts\python.exe manage.py index-bm25 --collection data\msmarco\collection.tsv --max-docs 1500000
+.\.venv\Scripts\python.exe manage.py index-vector --collection data\msmarco\collection.tsv --max-docs 1500000
+
+# Inspect progress and final counts
+.\.venv\Scripts\python.exe manage.py status
 ```
 
-Output:
-```
-Database tables created successfully.
-```
+To delete generated indexes, manifest, and docstore while preserving raw MS MARCO files:
 
-### Download MS MARCO Script
-
-```bash
-# Download MS MARCO dataset
-python scripts/download_msmarco.py
+```powershell
+# Destructive and not reversible without rebuilding
+.\.venv\Scripts\python.exe manage.py reset --yes
 ```
 
----
+## 7. Run checks
 
-## Configuration
+Backend tests use fake services and do not need the full indexes:
 
-### Environment Variables
+```powershell
+Set-Location 'C:\Users\golde\Desktop\Projects\Hybrid_search_engine\hybrid-search-engine'
+.\.venv\Scripts\python.exe manage.py test -v
 
-Create a `.env` file in the project root to override defaults:
+# API tests only
+.\.venv\Scripts\python.exe -m pytest tests\test_api.py -v
 
-```bash
-# PostgreSQL Configuration
-POSTGRES_URL=postgresql://search_user:search_password@localhost:5432/search_engine
-
-# Redis Configuration
-REDIS_URL=redis://localhost:6379/0
-
-# Search Parameters
-BM25_TOP_K=100
-VECTOR_TOP_K=100
-RERANK_TOP_K=50
-RESULTS_PER_PAGE=10
-
-# Model Configuration
-EMBEDDING_MODEL=all-MiniLM-L6-v2
-CROSS_ENCODER_MODEL=cross-encoder/ms-marco-MiniLM-L-6-v2
-
-# Cache Configuration
-CACHE_TTL=300
-
-# API Server Configuration
-API_HOST=0.0.0.0
-API_PORT=8000
+# Smoke test against a running backend
+.\.venv\Scripts\python.exe manage.py smoke --query 'what causes rain'
 ```
 
-### Using Configuration in Code
+Frontend production check:
 
-```python
-import os
-from dotenv import load_dotenv
-from src.config import INDEX_DIR, CACHE_TTL_SECONDS
-
-# Configuration is automatically loaded from .env
-# Access configuration values from the config module
-print(f"Using index directory: {INDEX_DIR}")
-print(f"Cache TTL: {CACHE_TTL_SECONDS} seconds")
-
-# Or override in code
-os.environ["CACHE_TTL"] = "600"
-# Note: You need to reload the config module for changes to take effect
+```powershell
+Set-Location 'C:\Users\golde\Desktop\Projects\Hybrid_search_engine\hybrid-search-engine-frontend'
+pnpm build
 ```
+This is a long-running benchmark. It evaluates BM25, vector, RRF variants, SQ8 (when supplied), and hybrid + cross-encoder reranking. Results are written atomically to:
 
----
+- `Benchmark/results/1.5M.json` — machine-readable measurements and provenance
+- `Benchmark/results/1.5M.md` — readable report
+- `Benchmark/results/README.md` — cross-run summary
 
-## Development Workflow
-
-### Project Structure Setup
-
-```bash
-# Navigate to project
-cd hybrid-search-engine
-
-# Create virtual environment
-python -m venv .venv
-
-# Activate virtual environment (Windows PowerShell)
-.\.venv\Scripts\Activate.ps1
-
-# Activate virtual environment (Linux/Mac)
-source .venv/bin/activate
-
-# Install project in development mode
-pip install -e .
-
-# Verify installation
-pip list
-```
-
-### Starting Services
-
-```bash
-# Start PostgreSQL and Redis containers
-docker compose up -d
-
-# Wait for services to be ready
-Start-Sleep -Seconds 5
-
-# Initialize database
-python scripts/init_db.py
-
-# Check container status
-docker compose ps
-```
-
-### Running the Application
-
-```bash
-# Terminal 1: Start the API server
-python -m uvicorn src.api.main:app --reload
-
-# Terminal 2: View PostgreSQL logs
-docker compose logs -f postgres
-
-# Terminal 3: View Redis logs
-docker compose logs -f redis
-
-# Access API documentation
-# Open browser to: http://127.0.0.1:8000/docs
-```
-
-### Development with Hot Reload
-
-```bash
-# The --reload flag watches for file changes and restarts the server
-python -m uvicorn src.api.main:app --reload --host 127.0.0.1 --port 8000
-
-# Changes to src/ files will automatically reload the server
-```
-
----
-
-## Database Operations
-
-### PostgreSQL Connection
-
-```python
-from src.database.postgres import SessionLocal, get_session
-from src.database.models import Base
-
-# Synchronous session
-session = SessionLocal()
-
-try:
-    # Perform database operations
-    pass
-finally:
-    session.close()
-
-# Using get_session helper
-session = get_session()
-try:
-    # Perform database operations
-    pass
-finally:
-    session.close()
-```
-
-### Async PostgreSQL Operations
-
-```python
-from src.database.postgres import AsyncSessionLocal, get_async_session
-from sqlalchemy.ext.asyncio import AsyncSession
-
-# For use in FastAPI dependency injection
-async def my_route(session: AsyncSession = Depends(get_async_session)):
-    # Perform async database operations
-    pass
-
-# Direct async session
-from src.database.postgres import AsyncSessionLocal
-
-async def my_async_function():
-    async with AsyncSessionLocal() as session:
-        # Perform async database operations
-        pass
-```
-
-### Database Initialization
-
-```python
-from src.database.postgres import init_db
-
-# Create all tables
-init_db()
-```
-
-### Docker Database Access
-
-```bash
-# Access PostgreSQL directly
-docker exec -it search-postgres psql -U search_user -d search_engine
-
-# Common PostgreSQL commands
-# \dt - List all tables
-# \d table_name - Describe table
-# SELECT * FROM table_name; - Query table
-# \q - Quit
-
-# Access Redis CLI
-docker exec -it search-redis redis-cli
-
-# Common Redis commands
-# PING - Test connection
-# KEYS * - List all keys
-# GET key_name - Get value
-# DEL key_name - Delete key
-```
-
-### Reset Database
-
-```bash
-# WARNING: This deletes all data
-
-# Stop and remove containers with volumes
-docker compose down -v
-
-# Start fresh services
-docker compose up -d
-
-# Wait for services to be ready
-Start-Sleep -Seconds 5
-
-# Initialize database
-python scripts/init_db.py
-```
-
----
-
-## Caching
-
-### Redis Cache Usage
-
-```python
-import asyncio
-from src.database.redis_client import cache
-
-async def example_caching():
-    # Initialize cache connection
-    await cache.connect()
-    
-    try:
-        # Try to get cached results
-        cached = await cache.get_cached_results(
-            query="python programming",
-            page=1,
-            size=10
-        )
-        
-        if cached:
-            print("Cache hit!")
-            results = cached
-        else:
-            print("Cache miss, computing results...")
-            results = {"query": "python programming", "results": [...]}
-            
-            # Cache the results with TTL
-            await cache.cache_results(
-                query="python programming",
-                results=results,
-                page=1,
-                size=10
-            )
-        
-        # Invalidate all cached results if needed
-        await cache.invalidate_all()
-        
-    finally:
-        # Close connection
-        await cache.close()
-
-# Run in asyncio event loop
-asyncio.run(example_caching())
-```
-
-### Cache Configuration
-
-```python
-from src.config import CACHE_TTL_SECONDS
-
-# Cache TTL is configurable via environment variable
-# Default: 300 seconds (5 minutes)
-print(f"Cache TTL: {CACHE_TTL_SECONDS} seconds")
-
-# To change, set in .env:
-# CACHE_TTL=600
-```
-
----
-
-## Testing
-
-### Running Tests
-
-```bash
-# Run all tests
-pytest tests/ -v
-
-# Run specific test file
-pytest tests/test_bm25.py -v
-
-# Run specific test
-pytest tests/test_bm25.py::test_search_returns_relevant_results -v
-
-# Run with coverage report
-pytest tests/ --cov=src --cov-report=html
-
-# Run with verbose output
-pytest tests/ -vv
-
-# Run with output capture disabled (see print statements)
-pytest tests/ -s
-```
-
-### Test File Structure
-
-```python
-# tests/test_bm25.py
-import pytest
-from src.search.bm25 import BM25Search
-
-@pytest.fixture
-def bm25_with_test_data(tmp_path):
-    """Fixture that provides a BM25 instance with test data."""
-    engine = BM25Search(index_path=tmp_path / "bm25_test_index")
-    
-    documents = [
-        {
-            "id": "1",
-            "title": "Python Programming Tutorial",
-            "body": "Learn Python programming from scratch.",
-            "category": "programming",
-        },
-        {
-            "id": "2",
-            "title": "JavaScript Web Development",
-            "body": "Build modern web applications using JavaScript.",
-            "category": "web",
-        },
-    ]
-    engine.add_documents(documents)
-    return engine
-
-def test_search_returns_relevant_results(bm25_with_test_data):
-    """Test that search returns relevant documents."""
-    results = bm25_with_test_data.search("python", top_k=5)
-    
-    assert len(results) == 1
-    assert results[0]["id"] == "1"
-
-def test_search_results_are_sorted_by_score(bm25_with_test_data):
-    """Test that results are sorted by score in descending order."""
-    results = bm25_with_test_data.search("programming", top_k=5)
-    scores = [result["score"] for result in results]
-    
-    assert scores == sorted(scores, reverse=True)
-
-def test_search_respects_top_k(bm25_with_test_data):
-    """Test that search respects the top_k parameter."""
-    results = bm25_with_test_data.search("programming", top_k=1)
-    
-    assert len(results) <= 1
-```
-
-### Running Preprocessing Tests
-
-```bash
-# Test text cleaning
-pytest tests/test_preprocessing.py::test_clean_text_removes_html_and_decodes_entities -v
-
-# Test document validation
-pytest tests/test_preprocessing.py::test_is_valid_document_rejects_empty_title -v
-
-# Test snippet generation
-pytest tests/test_preprocessing.py::test_generate_snippet_contains_query_term -v
-```
-
-### Running API Tests
-
-```bash
-# Test API endpoints
-pytest tests/test_api.py -v
-
-# Test health check endpoint
-pytest tests/test_api.py::test_health_check -v
-
-# Test search endpoint validation
-pytest tests/test_api.py::test_search_rejects_too_short_query -v
-
-# Test search response format
-pytest tests/test_api.py::test_search_response_has_expected_shape -v
-```
-
----
-
-## Complete Workflow Example
-
-Here's a complete example showing how all components work together:
-
-```python
-#!/usr/bin/env python
-"""
-Complete workflow example for the Hybrid Search Engine.
-"""
-
-from pathlib import Path
-from src.search.bm25 import BM25Search
-from src.indexing.preprocessing import clean_text, is_valid_document, generate_snippet
-from src.config import INDEX_DIR
-
-def main():
-    print("=" * 60)
-    print("Hybrid Search Engine - Complete Workflow Example")
-    print("=" * 60)
-    
-    # Step 1: Initialize BM25 Search
-    print("\n[1/4] Initializing BM25 Search...")
-    bm25 = BM25Search(index_path=INDEX_DIR / "bm25")
-    print("✓ BM25 initialized")
-    
-    # Step 2: Prepare and validate documents
-    print("\n[2/4] Preparing documents...")
-    raw_documents = [
-        {
-            "id": "1",
-            "title": "Python Programming",
-            "body": "<p>Learn Python programming basics</p>",
-            "category": "programming",
-        },
-        {
-            "id": "2",
-            "title": "Web Development",
-            "body": "Build modern web applications with JavaScript & React",
-            "category": "web",
-        },
-    ]
-    
-    documents = []
-    for doc in raw_documents:
-        cleaned_body = clean_text(doc["body"])
-        
-        if is_valid_document(doc["title"], cleaned_body):
-            documents.append({
-                "id": doc["id"],
-                "title": doc["title"],
-                "body": cleaned_body,
-                "category": doc["category"],
-            })
-    
-    print(f"✓ Prepared {len(documents)} documents")
-    
-    # Step 3: Index documents
-    print("\n[3/4] Indexing documents...")
-    bm25.add_documents(documents)
-    print("✓ Documents indexed")
-    
-    # Step 4: Search and display results
-    print("\n[4/4] Searching...")
-    query = "Python programming"
-    results = bm25.search(query, top_k=10)
-    
-    print(f"\nSearch Results for '{query}':")
-    print("-" * 60)
-    
-    for i, result in enumerate(results, 1):
-        snippet = generate_snippet(result["body"], query)
-        print(f"\n{i}. {result['title']}")
-        print(f"   ID: {result['id']}")
-        print(f"   Category: {result['category']}")
-        print(f"   Score: {result['score']:.2f}")
-        print(f"   Snippet: {snippet}")
-    
-    print("\n" + "=" * 60)
-    print("Workflow Complete!")
-    print("=" * 60)
-
-if __name__ == "__main__":
-    main()
-```
-
-Run the example:
-```bash
-python example_workflow.py
-```
-
----
+Only 268 queries in the fixed cohort have relevant documents inside this 1.5M subset, so quality metrics use those queries. The reranked run uses 200 of them. Its `Recall@100` is not directly comparable to candidate retrievers because reranking returns a shorter final list; use NDCG@10 and MRR@10 to judge reranking quality.
 
 ## Troubleshooting
 
-### Common Issues and Solutions
+| Symptom | Fix |
+| --- | --- |
+| `/health/ready` returns `503` | Wait for startup. If it persists, inspect the backend error and run `manage.py status`. |
+| Artifact hash or count mismatch | The indexes came from different builds. Rebuild BM25 and vector artifacts together; do not bypass validation. |
+| Reranked search returns `503` | Set `$env:ENABLE_RERANKER = "true"` and restart the backend. |
+| Reranked search returns `429` | One rerank is already running; retry after it finishes. |
+| Search returns `422` | Use a query of at least 3 characters and ensure `candidates_k >= top_k`. |
+| Frontend cannot reach the API | Confirm the backend is on port 8000 and `/health/ready` succeeds; otherwise set `NEXT_PUBLIC_API_BASE_URL`. |
+| Model download fails | Check internet access and retry; Sentence Transformers models are downloaded on first use. |
+| Port already in use | Backend: `manage.py serve --port 9000`; then set the frontend API URL to `http://localhost:9000`. |
 
-#### 1. BM25 Index Not Found
+For every available command and option:
 
-```python
-# Error: FileNotFoundError: Index not found at path
-
-# Solution: Initialize and index documents first
-from src.indexing.pipeline import run_indexing_pipeline
-
-bm25 = run_indexing_pipeline(max_documents=1000)
+```powershell
+.\.venv\Scripts\python.exe manage.py --help
+.\.venv\Scripts\python.exe manage.py <command> --help
 ```
 
-#### 2. PostgreSQL Connection Failed
+## 8. Benchmark the current 1.5M generation
 
-```bash
-# Check if Docker containers are running
-docker compose ps
+The checked-in cohort and current manifest can run the full reproducible benchmark below. It measures BM25, vectors, hybrid RRF variants, and cross-encoder reranking over five repetitions; it also validates the SQ8 index.
 
-# Restart services if needed
-docker compose down
-docker compose up -d
-docker compose ps
-
-# Verify connection
-docker exec -it search-postgres psql -U search_user -d search_engine -c "\dt"
+```powershell
+Set-Location 'C:\Users\golde\Desktop\Projects\Hybrid_search_engine\hybrid-search-engine'
+.\.venv\Scripts\python.exe Benchmark\benchmark_retrieval.py `
+  --manifest data\indexes\artifact_manifest.json `
+  --cohort Benchmark\cohorts\dev1000.json `
+  --queries data\msmarco\queries.dev.small.tsv `
+  --qrels data\msmarco\qrels.dev.small.tsv `
+  --vector-index data\indexes\vector.faiss `
+  --sq8-index data\indexes\vector.sq8.faiss `
+  --corpus-label 1.5M `
+  --corpus-size 1499977 `
+  --repeats 5 `
+  --rerank-queries 200 `
+  --output-dir Benchmark\results
 ```
 
-#### 3. Redis Connection Failed
+Outputs are written to:
 
-```bash
-# Check Redis is running
-docker compose ps
-
-# Test Redis connection
-docker exec -it search-redis redis-cli ping
-# Should respond with PONG
+```text
+Benchmark\results\1.5M.json
+Benchmark\results\1.5M.md
+Benchmark\results\README.md
 ```
 
-#### 4. API Server Won't Start
+For a faster run without the cross-encoder:
 
-```bash
-# Check if port 8000 is already in use
-# Option 1: Kill process on port 8000
-# On Windows:
-netstat -ano | findstr :8000
-taskkill /PID <PID> /F
-
-# Option 2: Use different port
-python -m uvicorn src.api.main:app --port 8001
+```powershell
+.\.venv\Scripts\python.exe manage.py benchmark --cohort Benchmark\cohorts\dev1000.json --corpus-label 1.5M --corpus-size 1499977 --skip-rerank
 ```
 
-#### 5. Tests Failing
+If you rebuild a different corpus, use the exact count from `artifact_manifest.json` for `--corpus-size` and create a fixed cohort with:
 
-```bash
-# Run tests with verbose output
-pytest tests/ -vv -s
-
-# Check for fixture issues
-pytest --fixtures
-
-# Run single test for debugging
-pytest tests/test_bm25.py::test_search_returns_relevant_results -vv -s
+```powershell
+.\.venv\Scripts\python.exe manage.py cohort --max-queries 500 --output Benchmark\cohorts\dev500.json
 ```
 
----
+## Configuration
 
-## Additional Resources
+Optional environment variables can be set before backend startup or placed in `hybrid-search-engine\.env`:
 
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [Tantivy Documentation](https://docs.rs/tantivy/)
-- [SQLAlchemy Documentation](https://docs.sqlalchemy.org/)
-- [Redis Documentation](https://redis.io/documentation)
-- [Pytest Documentation](https://docs.pytest.org/)
+```dotenv
+ENABLE_RERANKER=false
+RESULTS_PER_PAGE=10
+BM25_TOP_K=100
+VECTOR_TOP_K=100
+CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+```
 
----
+Advanced path overrides are `BM25_INDEX_PATH`, `VECTOR_INDEX_PATH`, and `DOCSTORE_PATH`. Restart the backend after changing configuration.
 
-**Last Updated**: May 12, 2026
-**Version**: 0.1.0
+## Troubleshooting
+
+| Symptom | Check |
+|---|---|
+| Backend fails during startup | Run `manage.py status`; ensure the manifest is complete and BM25/vector/docstore counts and hashes match. |
+| Frontend says it cannot reach the API | Confirm `/health/ready`, `NEXT_PUBLIC_API_BASE_URL`, port 8000, and backend CORS origins. |
+| Reranked mode returns HTTP 503 | Set `ENABLE_RERANKER=true` before starting the backend, then wait for model loading. |
+| Search returns HTTP 422 | Use a query of 3–256 characters and valid limits; for reranking, ensure `candidates_k >= top_k`. |
+| Port 8000 is occupied | Find it with `Get-NetTCPConnection -LocalPort 8000`, or start with `manage.py serve --port 8001` and update the frontend API URL. |
+| Indexing was interrupted | Rerun the same indexing command; it resumes from its checkpoint. |
+
+For every backend command and option, run:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py --help
+.\.venv\Scripts\python.exe manage.py <command> --help
+```

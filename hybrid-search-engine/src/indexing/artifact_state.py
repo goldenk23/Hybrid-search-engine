@@ -46,7 +46,10 @@ def sha256_path(path: Path) -> str:
 
     for file in files:
         # Include the relative path so renaming a file changes the fingerprint.
-        digest.update(str(file.relative_to(path.parent)).encode())
+        # as_posix() keeps the separator stable: str() would emit "dir\file" on
+        # Windows and "dir/file" on Linux, so a bundle prepared on Windows could
+        # never pass verification on a Linux server.
+        digest.update(file.relative_to(path.parent).as_posix().encode())
         # Stream in 1 MB chunks to avoid loading multi-GB indexes into RAM.
         with file.open("rb") as stream:
             for chunk in iter(lambda: stream.read(1024 * 1024), b""):

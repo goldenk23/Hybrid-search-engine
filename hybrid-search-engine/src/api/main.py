@@ -32,8 +32,11 @@ from src.config import (
     BM25_INDEX_PATH,
     CORS_ORIGINS,
     DOCSTORE_PATH,
+    EMBEDDING_MODEL_NAME,
+    EMBEDDING_MODEL_REVISION,
     ENABLE_RERANKER,
     INDEX_DIR,
+    REQUIRE_PINNED_ARTIFACTS,
     VECTOR_INDEX_PATH,
 )
 from src.database.docstore import SQLiteDocstore
@@ -104,11 +107,33 @@ def verify_complete_manifest_and_hashes(manifest_path) -> dict:
     stored = manifest.get("artifact_sha256", {})
     to_check = {
         "docstore": DOCSTORE_PATH,
-        **({"bm25": BM25_INDEX_PATH} if BM25_INDEX_PATH.exists() else {}),
-        **({"vector": VECTOR_INDEX_PATH} if VECTOR_INDEX_PATH.exists() else {}),
+        "bm25": BM25_INDEX_PATH,
+        "vector": VECTOR_INDEX_PATH,
     }
+    if REQUIRE_PINNED_ARTIFACTS:
+        missing_artifacts = [name for name, path in to_check.items() if not path.exists()]
+        missing_hashes = [name for name in to_check if name not in stored]
+        if missing_artifacts or missing_hashes:
+            raise RuntimeError(
+                "Production artifacts are incomplete: "
+                f"missing files={missing_artifacts}, missing hashes={missing_hashes}"
+            )
+        manifest_model = manifest.get("embedding_model")
+        manifest_revision = manifest.get("embedding_revision")
+        if not EMBEDDING_MODEL_REVISION:
+            raise RuntimeError("EMBEDDING_MODEL_REVISION is required in production")
+        if (manifest_model, manifest_revision) != (
+            EMBEDDING_MODEL_NAME,
+            EMBEDDING_MODEL_REVISION,
+        ):
+            raise RuntimeError(
+                "Runtime embedding model does not match the artifact manifest: "
+                f"manifest=({manifest_model!r}, {manifest_revision!r}), "
+                f"runtime=({EMBEDDING_MODEL_NAME!r}, {EMBEDDING_MODEL_REVISION!r})"
+            )
+
     for name, path in to_check.items():
-        if name not in stored:
+        if not path.exists() or name not in stored:
             continue
         actual = sha256_path(path)
         if actual != stored[name]:

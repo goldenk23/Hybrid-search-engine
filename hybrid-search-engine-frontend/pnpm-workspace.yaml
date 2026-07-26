@@ -1,6 +1,9 @@
 overrides:
   hono: "4.12.25"
 
-onlyBuiltDependencies:
-  - msw
-  - sharp
+# pnpm 11 renamed onlyBuiltDependencies to allowBuilds and made strictDepBuilds
+# fail the install by default, so the old key silently allowed nothing and any
+# clean `pnpm install --frozen-lockfile` aborted.
+allowBuilds:
+  msw: true
+  sharp: true
