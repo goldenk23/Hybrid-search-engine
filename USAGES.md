@@ -4,6 +4,34 @@ This document contains complete, working code examples for all major components 
 
 ---
 
+## **Starting the Application**
+
+### **Start the Backend**
+
+Run from the `hybrid-search-engine` directory. Wait for `Application startup complete.` before opening the frontend.
+
+```powershell
+cd hybrid-search-engine
+.\.venv\Scripts\python.exe -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+```
+
+### **Start the Frontend**
+
+Run from the `hybrid-search-engine-frontend` directory in a second terminal.
+
+```powershell
+cd hybrid-search-engine-frontend
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+Then open **http://localhost:3000** in your browser.
+
+> The backend must be running before the frontend can return results.
+> API docs are available at **http://localhost:8000/docs** once the backend is up.
+
+---
+
 ## Table of Contents
 
 1. [API Usage](#api-usage)
