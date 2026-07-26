@@ -1,6 +1,10 @@
 # Hybrid Search Engine
 
-A production-oriented search platform over **1,499,977 MS MARCO passages**, combining lexical retrieval, semantic search, rank fusion, and cross-encoder reranking behind a FastAPI API and an interactive Next.js interface.
+---
+
+> A production-oriented retrieval platform combining Tantivy BM25, FAISS semantic search, weighted RRF, and cross-encoder reranking over 1,499,977 MS MARCO passages.
+
+[![CI](https://github.com/goldenk23/Hybrid-search-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/goldenk23/Hybrid-search-engine/actions/workflows/ci.yml) ![Next.js](https://img.shields.io/badge/Next.js-16.2-black?logo=nextdotjs) ![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white) ![FAISS](https://img.shields.io/badge/FAISS-CPU-0467DF) ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
 Built to answer a practical systems question: **how do you improve retrieval quality while keeping latency, storage, reproducibility, and operational failure modes visible?**
 

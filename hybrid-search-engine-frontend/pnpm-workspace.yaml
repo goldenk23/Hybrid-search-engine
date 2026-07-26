@@ -7,3 +7,4 @@ overrides:
 allowBuilds:
   msw: true
   sharp: true
+  unrs-resolver: true
