@@ -8,13 +8,12 @@ the BM25 index used by the search engine. It supports:
 - Continuous progress saving
 """
 
-import sys
 from collections.abc import Generator
 from pathlib import Path
-from tqdm import tqdm
+
 from src.config import DATA_DIR, INDEX_DIR
-from src.indexing.preprocessing import clean_text, is_valid_document
 from src.indexing.checkpoint import IndexCheckpoint
+from src.indexing.preprocessing import clean_text, is_valid_document
 from src.search.bm25 import BM25Search
 
 

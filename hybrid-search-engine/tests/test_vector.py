@@ -6,13 +6,12 @@ Uses a fake model that returns deterministic unit vectors so:
   - no GPU/CPU model load
   - tests run in milliseconds
 """
+import faiss
 import numpy as np
 import pytest
-import faiss
 
 from src.database.docstore import SQLiteDocstore
 from src.search.vector import VectorSearch
-
 
 # ------------------------------------------------------------------ fake model
 

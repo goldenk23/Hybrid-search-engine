@@ -15,7 +15,9 @@ Search Pipeline Overview:
 """
 
 from typing import Any
+
 from sentence_transformers import CrossEncoder
+
 from src.config import CROSS_ENCODER_MODEL_NAME
 
 

@@ -5,6 +5,7 @@ Reciprocal Rank Fusion (RRF) implementation for combining BM25 and vector result
 import math
 from typing import Any
 
+
 def reciprocal_rank_fusion(
     bm25_results: list[dict[str, Any]],
     vector_results: list[dict[str, Any]],

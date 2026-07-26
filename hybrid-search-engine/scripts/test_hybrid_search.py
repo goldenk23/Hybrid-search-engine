@@ -7,6 +7,7 @@ Usage:
 """
 import sys
 from pathlib import Path
+
 from tabulate import tabulate
 
 project_root = Path(__file__).parent.parent
@@ -22,7 +23,7 @@ def main() -> None:
     
     query = "what is quantum entanglement?"
     print(f"\n{'='*100}")
-    print(f"HYBRID SEARCH RESULTS")
+    print("HYBRID SEARCH RESULTS")
     print(f"Query: {query}")
     print(f"{'='*100}\n")
     
@@ -56,10 +57,10 @@ def main() -> None:
         print(f"RRF Score:      {result['rrf_score']:.6f}")
         print(f"BM25 Score:     {result['bm25_score']:.6f}")
         print(f"Vector Score:   {result['vector_score']:.6f}")
-        print(f"\nBody:")
+        print("\nBody:")
         body = result.get('body', 'N/A')
         print(f"{body}")
-        print(f"\n")
+        print("\n")
     
     print(f"{'='*100}\n")
 

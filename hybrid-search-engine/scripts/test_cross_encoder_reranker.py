@@ -1,6 +1,6 @@
 import sys
-import os
 from pathlib import Path
+
 """ 
 usage: python scripts/test_cross_encoder_reranker.py
 """
@@ -8,18 +8,19 @@ usage: python scripts/test_cross_encoder_reranker.py
 # Add src to python path so modules can be found
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.search.hybrid_search import HybridSearchEngine
 from src.search.cross_encoder_reranker import CrossEncoderReranker
+from src.search.hybrid_search import HybridSearchEngine
+
 
 def main():
     query = "explain difference between nuclear fusion and fission"
     
     # Init search engine
-    print(f"Initializing HybridSearchEngine...")
+    print("Initializing HybridSearchEngine...")
     hybrid_engine = HybridSearchEngine()
     
     # Init reranker
-    print(f"Initializing CrossEncoderReranker...")
+    print("Initializing CrossEncoderReranker...")
     reranker = CrossEncoderReranker()
     
     print(f"\nSearching for: '{query}'")
@@ -44,7 +45,7 @@ def main():
         top_k=5
     )
     
-    print(f"\nTop 5 Results after Reranking:")
+    print("\nTop 5 Results after Reranking:")
     print("=" * 100)
     
     for i, res in enumerate(reranked_results, 1):

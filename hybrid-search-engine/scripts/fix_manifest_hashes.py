@@ -8,8 +8,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.indexing.artifact_state import sha256_path, load_json_required, write_json_atomic
-from src.config import BM25_INDEX_PATH, VECTOR_INDEX_PATH, DOCSTORE_PATH, INDEX_DIR
+from src.config import BM25_INDEX_PATH, DOCSTORE_PATH, INDEX_DIR, VECTOR_INDEX_PATH
+from src.indexing.artifact_state import load_json_required, sha256_path, write_json_atomic
 
 manifest_path = INDEX_DIR / "artifact_manifest.json"
 manifest = load_json_required(manifest_path)

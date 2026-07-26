@@ -1,4 +1,5 @@
 import pytest
+
 from src.database.docstore import SQLiteDocstore
 from src.search.bm25 import BM25Search
 

@@ -46,7 +46,6 @@ All systems are evaluated on the same cohort and the same queries.
 from __future__ import annotations
 
 import argparse
-import os
 import sqlite3
 import sys
 import time
@@ -64,7 +63,6 @@ from Benchmark.cohort import load_cohort
 from src.config import DOCSTORE_PATH, EMBEDDING_MODEL_NAME
 from src.evaluation.metrics import ndcg_at_k, recall_at_k
 from src.indexing.artifact_state import write_json_atomic
-
 
 # ------------------------------------------------------------------ helpers
 
@@ -95,7 +93,7 @@ def _ram_mib(index: faiss.Index) -> float:
     try:
         d = index.d
         return round(index.ntotal * d * 4 / 1024 / 1024, 2)
-    except Exception:
+    except Exception:  # noqa: BLE001 — FAISS index may be unloaded; safe default
         return 0.0
 
 
@@ -127,7 +125,7 @@ def _run_system(
 
         for run in range(repeats):
             t0 = time.perf_counter()
-            scores, faiss_ids = index.search(qvec, top_k)
+            _scores, faiss_ids = index.search(qvec, top_k)
             run_latencies[run].append((time.perf_counter() - t0) * 1000)
 
         ranked = [

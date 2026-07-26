@@ -6,9 +6,10 @@ no rounding shortcuts. If the formula changes, these tests break.
 """
 
 import math
-import pytest
-from src.evaluation.metrics import ndcg_at_k, mrr_at_k, recall_at_k
 
+import pytest
+
+from src.evaluation.metrics import mrr_at_k, ndcg_at_k, recall_at_k
 
 # ================================================================== ndcg_at_k
 
@@ -46,8 +47,8 @@ class TestNdcgAtK:
 
     def test_k_larger_than_ids(self):
         # k=100 but only 2 results — should not crash
-        dcg  = 1.0 / math.log2(2)
-        idcg = 1.0 / math.log2(2)
+        1.0 / math.log2(2)
+        1.0 / math.log2(2)
         assert ndcg_at_k(["A", "X"], {"A"}, k=100) == pytest.approx(1.0)
 
     def test_single_relevant_at_rank_1(self):

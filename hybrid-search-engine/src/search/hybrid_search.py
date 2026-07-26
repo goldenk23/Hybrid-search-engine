@@ -4,10 +4,11 @@ This module combines the vector search and BM25 keyword search results using Rec
 
 from typing import Any
 
-from src.config import BM25_TOP_K, VECTOR_TOP_K, RERANK_TOP_K
+from src.config import BM25_TOP_K, RERANK_TOP_K, VECTOR_TOP_K
 from src.search.bm25 import BM25Search
 from src.search.fusion import reciprocal_rank_fusion
 from src.search.vector import VectorSearch
+
 
 class HybridSearchEngine:
     

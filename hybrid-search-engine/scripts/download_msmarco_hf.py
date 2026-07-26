@@ -2,8 +2,9 @@
 Download MS MARCO dataset from HuggingFace (official source)
 """
 
-from datasets import load_dataset
 from pathlib import Path
+
+from datasets import load_dataset
 
 # Create output directory
 output_dir = Path("data/msmarco")

@@ -37,7 +37,6 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-
 # ------------------------------------------------------------------ hashing
 
 def _sha256_file(path: Path) -> str:
@@ -107,7 +106,7 @@ def create_cohort(
 
     # Keep only queries that have at least one relevant document.
     selected = []
-    for qid, qtext in queries.items():
+    for qid in queries:
         if qid in qrels:
             selected.append(qid)
         if max_queries is not None and len(selected) >= max_queries:
@@ -158,7 +157,7 @@ def load_cohort(
         raise RuntimeError(f"Cannot read cohort file: {cohort_path}") from exc
 
     if not isinstance(cohort, dict):
-        raise RuntimeError(f"Cohort file is not a JSON object: {cohort_path}")
+        raise TypeError(f"Cohort file is not a JSON object: {cohort_path}")
 
     # Fingerprint validation — only when source paths are supplied.
     if queries_path is not None:

@@ -33,7 +33,6 @@ import random
 from collections import defaultdict
 from pathlib import Path
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA_DIR = PROJECT_ROOT / "data" / "msmarco"
 DEFAULT_OUTPUT_DIR = DEFAULT_DATA_DIR

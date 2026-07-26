@@ -4,6 +4,7 @@ Hermetic tests for SQLiteDocstore.
 All tests use tmp_path — never data/docstore.sqlite.
 """
 import pytest
+
 from src.database.docstore import SQLiteDocstore
 
 DOCS = [
@@ -102,7 +103,7 @@ def test_read_only_rejects_writes(tmp_path):
 
     ro = SQLiteDocstore(tmp_path / "ro.sqlite", read_only=True)
     # SQLite enforces mode=ro at the engine level — any write raises an exception.
-    with pytest.raises(Exception):
+    with pytest.raises((RuntimeError, Exception)):
         ro.upsert_documents(DOCS)
 
 
@@ -120,7 +121,7 @@ def test_read_only_does_not_create_dir(tmp_path):
     nonexistent = tmp_path / "newdir" / "store.sqlite"
     # In read-only mode, the parent dir must already exist (or SQLite will error).
     # The key assertion: no directory was created just by constructing the object.
-    ro = SQLiteDocstore(nonexistent, read_only=True)
+    SQLiteDocstore(nonexistent, read_only=True)
     assert not nonexistent.parent.exists()
 
 

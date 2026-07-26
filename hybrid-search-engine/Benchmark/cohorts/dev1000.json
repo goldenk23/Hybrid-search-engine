@@ -1,0 +1,5072 @@
+{
+  "schema_version": 1,
+  "queries_sha256": "a4cd66b62f06ff7fba67dc3a07757c86e8c85896e90dce3f809181cd66035db9",
+  "qrels_sha256": "511f4696de839c2cafca04d863c6858139920be6c04bb865f448c36457d67bb7",
+  "max_queries": 1000,
+  "query_ids": [
+    "1048578",
+    "1048579",
+    "1048582",
+    "1048583",
+    "1048585",
+    "1048587",
+    "262156",
+    "2",
+    "1048600",
+    "1048601",
+    "524318",
+    "524332",
+    "1048621",
+    "1048624",
+    "1048625",
+    "52",
+    "524341",
+    "58",
+    "1048636",
+    "262207",
+    "1048642",
+    "1048645",
+    "786502",
+    "1038758",
+    "1048656",
+    "1048657",
+    "262230",
+    "1048663",
+    "87396",
+    "1048667",
+    "1048668",
+    "1048669",
+    "1048670",
+    "480613",
+    "1048672",
+    "1048673",
+    "786531",
+    "1048680",
+    "786537",
+    "322978",
+    "1048699",
+    "1048706",
+    "1048708",
+    "786568",
+    "1048717",
+    "524435",
+    "1048725",
+    "1048727",
+    "1048730",
+    "262302",
+    "524447",
+    "1048740",
+    "961222",
+    "786598",
+    "1048754",
+    "184",
+    "1048761",
+    "262330",
+    "43722",
+    "1048779",
+    "1048786",
+    "1048790",
+    "1048795",
+    "262365",
+    "222",
+    "786658",
+    "786660",
+    "1048811",
+    "1048812",
+    "786674",
+    "1048819",
+    "262392",
+    "1048825",
+    "1048828",
+    "254",
+    "255",
+    "786689",
+    "605793",
+    "1048836",
+    "1048843",
+    "1048844",
+    "1048846",
+    "1048848",
+    "1048849",
+    "1048851",
+    "524569",
+    "524574",
+    "1048868",
+    "1048871",
+    "1048876",
+    "1048917",
+    "1048919",
+    "524634",
+    "262495",
+    "786786",
+    "1048931",
+    "786791",
+    "1084142",
+    "362",
+    "1048944",
+    "370",
+    "1048947",
+    "524660",
+    "1048949",
+    "1048955",
+    "862426",
+    "131137",
+    "1048968",
+    "786835",
+    "524693",
+    "1048983",
+    "409",
+    "524699",
+    "1048989",
+    "1048994",
+    "1048995",
+    "786852",
+    "1048997",
+    "786857",
+    "524717",
+    "524722",
+    "873886",
+    "524733",
+    "1049022",
+    "1049024",
+    "524737",
+    "786882",
+    "786894",
+    "1049041",
+    "262615",
+    "1049050",
+    "524764",
+    "484",
+    "524773",
+    "786918",
+    "480680",
+    "262643",
+    "262647",
+    "786937",
+    "1049085",
+    "1049086",
+    "1049089",
+    "514",
+    "262232",
+    "524827",
+    "524833",
+    "262690",
+    "524835",
+    "524838",
+    "47140",
+    "524848",
+    "1049140",
+    "524382",
+    "787000",
+    "787001",
+    "1049146",
+    "1049150",
+    "579",
+    "1049157",
+    "262729",
+    "1049164",
+    "787025",
+    "393317",
+    "1064963",
+    "1049189",
+    "787053",
+    "1049200",
+    "262775",
+    "742847",
+    "1049221",
+    "1049225",
+    "1049231",
+    "1049239",
+    "1049242",
+    "787101",
+    "1049250",
+    "873927",
+    "1049260",
+    "1049261",
+    "830238",
+    "697",
+    "262849",
+    "524994",
+    "1049286",
+    "1049287",
+    "1049296",
+    "525009",
+    "1049309",
+    "1049310",
+    "1049314",
+    "1049315",
+    "1049329",
+    "944826",
+    "1049335",
+    "1049336",
+    "262906",
+    "1049340",
+    "1049348",
+    "262921",
+    "262274",
+    "1049363",
+    "262935",
+    "1049368",
+    "1049369",
+    "1049378",
+    "787235",
+    "8756",
+    "787255",
+    "262974",
+    "525119",
+    "846",
+    "1092408",
+    "263002",
+    "787295",
+    "263012",
+    "263018",
+    "1049455",
+    "1049456",
+    "1049458",
+    "1049469",
+    "1049470",
+    "525186",
+    "1049478",
+    "263052",
+    "525200",
+    "263061",
+    "830277",
+    "525229",
+    "943",
+    "525233",
+    "1049529",
+    "43677",
+    "1049553",
+    "263138",
+    "525287",
+    "525292",
+    "1007",
+    "1092436",
+    "525314",
+    "1049603",
+    "1049610",
+    "525324",
+    "1049615",
+    "787474",
+    "263187",
+    "787481",
+    "1049628",
+    "1049635",
+    "263211",
+    "263212",
+    "787503",
+    "1049649",
+    "787510",
+    "263224",
+    "1049663",
+    "1049664",
+    "787522",
+    "1049667",
+    "43873",
+    "1099",
+    "1049680",
+    "1049683",
+    "1049684",
+    "568164",
+    "1049691",
+    "787549",
+    "1049697",
+    "1137",
+    "611859",
+    "1157",
+    "525446",
+    "787601",
+    "263324",
+    "525470",
+    "1049761",
+    "263332",
+    "1092465",
+    "1049769",
+    "1195",
+    "1049774",
+    "1089385",
+    "226995",
+    "1049791",
+    "263367",
+    "1049805",
+    "1231",
+    "1049810",
+    "1049817",
+    "525534",
+    "525535",
+    "1049830",
+    "1049834",
+    "1099901",
+    "262356",
+    "1049853",
+    "787717",
+    "1049863",
+    "1288",
+    "1289",
+    "1049872",
+    "1049894",
+    "787751",
+    "1049909",
+    "1049918",
+    "1049920",
+    "787784",
+    "525643",
+    "1049934",
+    "1049939",
+    "263516",
+    "1049951",
+    "1049955",
+    "1049959",
+    "1049960",
+    "1049965",
+    "464391",
+    "1038802",
+    "263539",
+    "787830",
+    "1049983",
+    "1049984",
+    "1049985",
+    "1049986",
+    "525699",
+    "1049988",
+    "1049989",
+    "787847",
+    "1049992",
+    "787849",
+    "1424",
+    "1092504",
+    "787862",
+    "1050007",
+    "525723",
+    "1050014",
+    "1050015",
+    "1050019",
+    "1050020",
+    "1050021",
+    "525734",
+    "525745",
+    "1050035",
+    "525770",
+    "525779",
+    "1050070",
+    "787928",
+    "262396",
+    "525811",
+    "263668",
+    "263670",
+    "787959",
+    "1050107",
+    "1050110",
+    "1050115",
+    "1047536",
+    "811852",
+    "785665",
+    "1550",
+    "1050144",
+    "1050149",
+    "1576",
+    "1579",
+    "525868",
+    "349789",
+    "1050170",
+    "1050171",
+    "1050172",
+    "1050178",
+    "1050180",
+    "43958",
+    "1050184",
+    "788042",
+    "1050189",
+    "1050190",
+    "262413",
+    "306105",
+    "525923",
+    "1050212",
+    "1050224",
+    "1050231",
+    "1050236",
+    "525955",
+    "768211",
+    "263815",
+    "1050249",
+    "263818",
+    "1050253",
+    "1050254",
+    "525968",
+    "263825",
+    "788121",
+    "1050267",
+    "1697",
+    "1050275",
+    "263851",
+    "1066693",
+    "480154",
+    "1724",
+    "526013",
+    "526021",
+    "61161",
+    "1050318",
+    "263889",
+    "263891",
+    "263902",
+    "788193",
+    "1050342",
+    "526056",
+    "263913",
+    "263917",
+    "1050351",
+    "1050352",
+    "1050353",
+    "1050354",
+    "1050363",
+    "1050381",
+    "1050383",
+    "788246",
+    "1819",
+    "43994",
+    "788255",
+    "1050404",
+    "1050409",
+    "1050410",
+    "1050417",
+    "788275",
+    "1050420",
+    "263994",
+    "526141",
+    "1050432",
+    "306144",
+    "1050440",
+    "788299",
+    "1050448",
+    "526179",
+    "1091193",
+    "788331",
+    "1050482",
+    "788345",
+    "264065",
+    "1050503",
+    "526219",
+    "1050509",
+    "1050510",
+    "393540",
+    "1956",
+    "830449",
+    "788392",
+    "788396",
+    "526262",
+    "1050559",
+    "1050567",
+    "1993",
+    "1050572",
+    "264141",
+    "788431",
+    "314312",
+    "264150",
+    "1050586",
+    "786767",
+    "1050590",
+    "1091197",
+    "526306",
+    "788452",
+    "1050597",
+    "568316",
+    "788462",
+    "830461",
+    "788467",
+    "788468",
+    "526331",
+    "1092608",
+    "526338",
+    "788484",
+    "2057",
+    "314314",
+    "1048922",
+    "264229",
+    "1050669",
+    "1050670",
+    "264239",
+    "264243",
+    "1050679",
+    "1050691",
+    "788549",
+    "1050694",
+    "1050695",
+    "1050697",
+    "2123",
+    "1050705",
+    "1050707",
+    "1050708",
+    "264277",
+    "264284",
+    "1050718",
+    "524645",
+    "1050724",
+    "699409",
+    "1050728",
+    "1050730",
+    "1050733",
+    "1050739",
+    "1050742",
+    "1050743",
+    "1050747",
+    "1048939",
+    "1005249",
+    "1050775",
+    "1050778",
+    "1050779",
+    "264349",
+    "1050786",
+    "1050787",
+    "526506",
+    "1050796",
+    "1050803",
+    "1050805",
+    "2235",
+    "1050812",
+    "526530",
+    "1050820",
+    "655734",
+    "788682",
+    "1050830",
+    "1050832",
+    "1050833",
+    "1050835",
+    "1050836",
+    "1050837",
+    "830500",
+    "264410",
+    "1050844",
+    "788702",
+    "788703",
+    "264422",
+    "1050857",
+    "1050863",
+    "306217",
+    "1050874",
+    "740919",
+    "264445",
+    "526591",
+    "437291",
+    "1050893",
+    "2322",
+    "43997",
+    "264468",
+    "1050903",
+    "1050905",
+    "942814",
+    "1091208",
+    "1050923",
+    "526637",
+    "1050936",
+    "1050953",
+    "526671",
+    "1050961",
+    "1050976",
+    "1050979",
+    "1050985",
+    "1005287",
+    "1050990",
+    "1050991",
+    "788851",
+    "2423",
+    "830527",
+    "1051013",
+    "1051015",
+    "788875",
+    "1051020",
+    "264593",
+    "264594",
+    "830531",
+    "1051029",
+    "1051033",
+    "1051044",
+    "1051048",
+    "1051052",
+    "788923",
+    "788930",
+    "1051078",
+    "1051079",
+    "1092686",
+    "526806",
+    "1051095",
+    "1051096",
+    "526809",
+    "1051108",
+    "1051109",
+    "1051110",
+    "1051111",
+    "1051112",
+    "1051113",
+    "1051115",
+    "1051116",
+    "788983",
+    "526840",
+    "881718",
+    "1051133",
+    "1051134",
+    "1051135",
+    "1051138",
+    "1051139",
+    "1051140",
+    "1051142",
+    "2569",
+    "218882",
+    "1051176",
+    "1051179",
+    "789037",
+    "789042",
+    "2619",
+    "1051196",
+    "1051198",
+    "1051207",
+    "1051211",
+    "1051212",
+    "1051214",
+    "1051223",
+    "264793",
+    "1051226",
+    "1051229",
+    "1051232",
+    "1051234",
+    "264803",
+    "789092",
+    "393662",
+    "1051256",
+    "1051257",
+    "264827",
+    "526972",
+    "264835",
+    "1051270",
+    "526984",
+    "1051279",
+    "1051281",
+    "1051285",
+    "1051287",
+    "1051288",
+    "2716",
+    "527009",
+    "527013",
+    "1051307",
+    "264879",
+    "1051317",
+    "1051322",
+    "1051327",
+    "1051329",
+    "1051330",
+    "1051333",
+    "1051339",
+    "1051341",
+    "264910",
+    "1051344",
+    "1051352",
+    "1051354",
+    "789212",
+    "1051362",
+    "1051364",
+    "261964",
+    "1051372",
+    "2798",
+    "1051376",
+    "789239",
+    "527111",
+    "1051401",
+    "527114",
+    "1051405",
+    "1051406",
+    "527121",
+    "527124",
+    "527125",
+    "1051414",
+    "1051420",
+    "1051422",
+    "1051426",
+    "1051433",
+    "789292",
+    "265011",
+    "527158",
+    "1051448",
+    "1051454",
+    "527171",
+    "1051462",
+    "527176",
+    "527179",
+    "1051475",
+    "789332",
+    "1051479",
+    "1051489",
+    "1051491",
+    "1051495",
+    "1051504",
+    "1051509",
+    "1051520",
+    "1051521",
+    "1051522",
+    "1051523",
+    "265096",
+    "1051530",
+    "1051537",
+    "2962",
+    "1051539",
+    "1051543",
+    "1051544",
+    "1051546",
+    "1051551",
+    "1051552",
+    "1051553",
+    "1051554",
+    "1051555",
+    "1051559",
+    "1051569",
+    "1051571",
+    "1051580",
+    "527293",
+    "1051583",
+    "1051584",
+    "265160",
+    "1051593",
+    "1049079",
+    "1051599",
+    "1051603",
+    "527318",
+    "1051610",
+    "1051611",
+    "1051612",
+    "1051613",
+    "1092773",
+    "1051616",
+    "1051617",
+    "265189",
+    "3053",
+    "1051631",
+    "1051635",
+    "789493",
+    "961705",
+    "1051643",
+    "1051646",
+    "1051651",
+    "1051652",
+    "1051653",
+    "1051654",
+    "1051655",
+    "1051656",
+    "786946",
+    "1051662",
+    "1051670",
+    "1051675",
+    "1051676",
+    "1038859",
+    "1051688",
+    "789557",
+    "789558",
+    "1091234",
+    "1051704",
+    "1051705",
+    "1051710",
+    "1051723",
+    "3151",
+    "1051732",
+    "1051733",
+    "1051735",
+    "265304",
+    "1051738",
+    "1051755",
+    "918036",
+    "1051774",
+    "789640",
+    "1051786",
+    "1051791",
+    "1051796",
+    "789658",
+    "1051804",
+    "1051808",
+    "265378",
+    "789670",
+    "789675",
+    "1051825",
+    "175306",
+    "1051840",
+    "1051841",
+    "3267",
+    "3268",
+    "1051847",
+    "527568",
+    "1092814",
+    "1051866",
+    "1051867",
+    "1051871",
+    "527585",
+    "265442",
+    "1051877",
+    "1051878",
+    "1091240",
+    "1051886",
+    "1051890",
+    "527604",
+    "1051899",
+    "1051902",
+    "1051903",
+    "1051907",
+    "1051911",
+    "527625",
+    "1051914",
+    "1051920",
+    "830680",
+    "789792",
+    "265507",
+    "1051942",
+    "1051943",
+    "1051950",
+    "1051955",
+    "3387",
+    "789833",
+    "1051989",
+    "265558",
+    "568549",
+    "1052016",
+    "527730",
+    "1052019",
+    "1052049",
+    "527769",
+    "1052058",
+    "1052059",
+    "787014",
+    "3495",
+    "1052087",
+    "1052088",
+    "1052094",
+    "789961",
+    "527820",
+    "1052111",
+    "1052113",
+    "1052115",
+    "1052118",
+    "1092857",
+    "1052124",
+    "1052127",
+    "527842",
+    "789988",
+    "527853",
+    "961789",
+    "1052146",
+    "265717",
+    "265729",
+    "1052163",
+    "1052167",
+    "1052169",
+    "699651",
+    "1052181",
+    "961796",
+    "790042",
+    "1052193",
+    "1052194",
+    "1052195",
+    "1052196",
+    "1052202",
+    "790059",
+    "527916",
+    "1030723",
+    "1052214",
+    "1052218",
+    "790079",
+    "1052224",
+    "1052229",
+    "1052231",
+    "790088",
+    "1052236",
+    "790094",
+    "830733",
+    "790100",
+    "265816",
+    "1052251",
+    "1052252",
+    "1052254",
+    "1052255",
+    "1052272",
+    "1052274",
+    "1052275",
+    "1052277",
+    "527992",
+    "265864",
+    "790153",
+    "3722",
+    "1052301",
+    "1052303",
+    "1052309",
+    "1052310",
+    "1052311",
+    "1052313",
+    "790178",
+    "265891",
+    "1052330",
+    "1052335",
+    "262771",
+    "1052342",
+    "1052343",
+    "1052345",
+    "1052347",
+    "1052350",
+    "790212",
+    "655990",
+    "1052363",
+    "1052366",
+    "528086",
+    "1052377",
+    "790234",
+    "1052382",
+    "1052388",
+    "265960",
+    "1052396",
+    "1052399",
+    "1052401",
+    "528117",
+    "265975",
+    "1052408",
+    "265982",
+    "1052415",
+    "1052421",
+    "1052427",
+    "838116",
+    "1052430",
+    "790288",
+    "528145",
+    "1052438",
+    "1052440",
+    "528155",
+    "266032",
+    "266036",
+    "790330",
+    "1052476",
+    "1052486",
+    "1049228",
+    "306488",
+    "3934",
+    "1052519",
+    "266088",
+    "1052524",
+    "1052527",
+    "1052528",
+    "1092926",
+    "266102",
+    "1052537",
+    "1052538",
+    "1052548",
+    "1005548",
+    "1052554",
+    "1052557",
+    "1052563",
+    "528278",
+    "1052579",
+    "1052580",
+    "1052585",
+    "1092936",
+    "266163",
+    "1052598",
+    "1052599",
+    "4024",
+    "1091264",
+    "266177",
+    "528323",
+    "1052614",
+    "1052615",
+    "1052620",
+    "1052627",
+    "1052628",
+    "1052631",
+    "1052632",
+    "1091265",
+    "790491",
+    "528348",
+    "1052640",
+    "790498",
+    "1052646",
+    "266216",
+    "528362",
+    "1052672",
+    "1052673",
+    "1052674",
+    "528395",
+    "1052689",
+    "1052690",
+    "528407",
+    "266264",
+    "1052704",
+    "830812",
+    "1052717",
+    "1052721",
+    "4156",
+    "1052734",
+    "790592",
+    "1092960",
+    "331842",
+    "266309",
+    "790598",
+    "1052752",
+    "1052755",
+    "612366",
+    "262841"
+  ],
+  "queries": {
+    "1048578": "cost of endless pools/swim spa",
+    "1048579": "what is pcnt",
+    "1048582": "what is paysky",
+    "1048583": "what is paydata",
+    "1048585": "what is paula deen's brother",
+    "1048587": "what is patron",
+    "262156": "how long is a college hockey game",
+    "2": " Androgen receptor define",
+    "1048600": "what is patricia cornwell's latest book",
+    "1048601": "what is pastoral medicine",
+    "524318": "treating diabetes",
+    "524332": "treating tension headaches without medication",
+    "1048621": "who plays storm in days of future past",
+    "1048624": "what is pascal's law in simple terms",
+    "1048625": "what is parkland near in florida",
+    "52": " pneumo is a prefix meaning air. Knowing this, explain why this condition is called pneumothorax",
+    "524341": "treatment and prognosis for lung cancer",
+    "58": " the knee is what type of joint ",
+    "1048636": "what is parcel service",
+    "262207": "how long is a cubit?",
+    "1048642": "what is paranoid sc",
+    "1048645": "what is paper with a watermark called",
+    "786502": "what is pressure vessel testing and repair",
+    "1038758": "what is the gram molecular weight of maltose",
+    "1048656": "what is panama currency called",
+    "1048657": "what is pama liqueur",
+    "262230": "how long is a day on planet pluto",
+    "1048663": "what is palm harbor florida",
+    "87396": "causes of male urinating blood",
+    "1048667": "what is page break preview?",
+    "1048668": "what is packaging logistics",
+    "1048669": "what is p-nitroaniline used for",
+    "1048670": "what is p&i paym",
+    "480613": "price of deodorant and anti",
+    "1048672": "what is oxytocin in a female animal",
+    "1048673": "what is ownership of a corporation called",
+    "786531": "what is prevail",
+    "1048680": "what is overtures",
+    "786537": "what is prevailing wage request",
+    "322978": "how much is sleep study at hospital",
+    "1048699": "cost of credit report from all three credit bureaus",
+    "1048706": "what is overhead rate in managerial accounting?",
+    "1048708": "what is ovalbumin",
+    "786568": "what is price of pressure treated lumber 2x6x8",
+    "1048717": "who plays the janitor in scrubs",
+    "524435": "treatment of pelvic organ prolapse",
+    "1048725": "who plays the main character in night at the museum",
+    "1048727": "who plays the maytag man",
+    "1048730": "what is outlook data file",
+    "262302": "how long is a female in heat",
+    "524447": "treatment of varicose veins in legs",
+    "1048740": "who plays the original john laurens in hamilton broadway",
+    "961222": "when was the first television broadcast",
+    "786598": "what is primary and non-contributory under the liability",
+    "1048754": "what is outlander",
+    "184": "+is biology a social science",
+    "1048761": "what is outer loop",
+    "262330": "how long is a flight from chicago to australia",
+    "43722": "average sales salary and commission",
+    "1048779": "what is ott media",
+    "1048786": "what is osteo bi flex triple for",
+    "1048790": "cost of concrete apron",
+    "1048795": "cost of combigan generic",
+    "262365": "how long is a flight from washington dc to manchester nh",
+    "222": "+what does ca cells mean urine test",
+    "786658": "what is primary site of activity of warfarin",
+    "786660": "what is primary syphilis",
+    "1048811": "what is organic insomnia",
+    "1048812": "who plays trevor in a cowgirls story",
+    "786674": "what is prime rate in canada",
+    "1048819": "what is oregon's income tax rate",
+    "262392": "how long is a football field in ft",
+    "1048825": "what is oregano oil used to treat?",
+    "1048828": "what is orange berg on a house",
+    "254": "+what is cchaps",
+    "255": "+what is centure",
+    "786689": "what is primidone prescribed for",
+    "605793": "what county is fairfield ohio in",
+    "1048836": "who plays velma in scooby doo 2",
+    "1048843": "what is oral poetry",
+    "1048844": "what is oracle vpd functionality",
+    "1048846": "what is option button style ?",
+    "1048848": "what is oprah winfrey's net wo",
+    "1048849": "what is oprah wi",
+    "1048851": "what is opportunities in acfta",
+    "524569": "trend what does it means",
+    "524574": "trending topic meaning",
+    "1048868": "what is operator in language",
+    "1048871": "who plays xander from bunkd",
+    "1048876": "who plays young dr mallard on ncis",
+    "1048917": "what is operating system misconfiguration",
+    "1048919": "who prescribes hair loss medications for men",
+    "524634": "triangle angle sum property definition",
+    "262495": "how long is a jump rope",
+    "786786": "what is priority pass",
+    "1048931": "what is opentable",
+    "786791": "what is prism in eyeglasses",
+    "1084142": "cause of pimples on tip of nose",
+    "362": ". what are the president's main duties? explain each",
+    "1048944": "who produced peek a boo",
+    "370": ". what is the institute for leaders?",
+    "1048947": "who produced stoned love",
+    "524660": "tribal police department, federal definition",
+    "1048949": "who produced the game centipede",
+    "1048955": "who produced transformers",
+    "862426": "what is web accessibility",
+    "131137": "definition gross wages",
+    "1048968": "what is open application",
+    "786835": "what is prm?",
+    "524693": "tricare prime cost 2015",
+    "1048983": "what is op medically",
+    "409": ".vbs what it mean",
+    "524699": "tricare service number",
+    "1048989": "what is onset",
+    "1048994": "who proposed the earth was round?",
+    "1048995": "who proposed the geocentric theory",
+    "786852": "what is proair hfa",
+    "1048997": "what is one stadia equal",
+    "786857": "what is probability biology",
+    "524717": "tricks for telling how many lines of symmetry a shape has",
+    "524722": "tricuspid atresia definition",
+    "873886": "what level does zubat evolves to",
+    "524733": "trigeminal definition",
+    "1049022": "what is one source of a nonrenewable resource",
+    "1049024": "what is one pound in weight officially",
+    "524737": "trigeminal neuralgia definition and classification",
+    "786882": "what is problem solution meaning",
+    "786894": "what is procedural fluency in math",
+    "1049041": "cost of changing locks for house",
+    "262615": "how long is a military commitment",
+    "1049050": "what is one main objective in the study of economics?",
+    "524764": "trigonometric definition math",
+    "484": "1 mile equals how many feet",
+    "524773": "trilobites definition",
+    "786918": "what is process control equipment",
+    "480680": "price of front rotors and brakes",
+    "262643": "how long is a multidose vial good for once opened",
+    "262647": "how long is a nap ?",
+    "786937": "what is process improvement (lean six sigma)",
+    "1049085": "what is on the outside of dna",
+    "1049086": "what is omr currency",
+    "1049089": "what is ollie ollie oxen",
+    "514": "1. define lymph and explain its function",
+    "262232": "how long is a day on ven",
+    "524827": "triptans minimum age",
+    "524833": "trismus definition",
+    "262690": "how long is a paragraph supposed to be",
+    "524835": "tristesse definition",
+    "524838": "tritium paint",
+    "47140": "average weather in wyoming in july",
+    "524848": "trivex lenses cost",
+    "1049140": "what is oliver twist ask",
+    "524382": "treatment for menopause symptoms",
+    "787000": "what is procure",
+    "787001": "what is procurement",
+    "1049146": "who ran for the senate against stephen douglas and had a series of debates about slavery with him",
+    "1049150": "what is oklahoma's sales tax rate",
+    "579": "100g chicken carb content",
+    "1049157": "who read mlk letter from jail",
+    "262729": "how long is a personal check good for to cash",
+    "1049164": "what is oklahoma's absolute location",
+    "787025": "what is produced during mitosis",
+    "393317": "in clia what term replaced quality assurance",
+    "1064963": "why do knees swell up",
+    "1049189": "what is oj simpson doing",
+    "787053": "what is product lifecycle",
+    "1049200": "who recorded loving you",
+    "262775": "how long is a prescription for glasses valid",
+    "742847": "what is efficacies",
+    "1049221": "who recorded the song still the one?",
+    "1049225": "who recorded uptown funk",
+    "1049231": "what is oi meaning english",
+    "1049239": "who refused the academy award for godfather",
+    "1049242": "what is official mail",
+    "787101": "what is profanity",
+    "1049250": "what is official currency of namibia",
+    "873927": "what level is low?",
+    "1049260": "what is ocp in medical",
+    "1049261": "what is oceana organization",
+    "830238": "what is the maximum amount you can get out of an atm",
+    "697": "15 oz can in ml",
+    "262849": "how long is a semester",
+    "524994": "true meaning of humpty dumpty",
+    "1049286": "what is obstructive bowel syndrome",
+    "1049287": "who released the album drones",
+    "1049296": "who replaced cliff burton in metallica",
+    "525009": "true that people can die from a broken heart",
+    "1049309": "what is objective data collection",
+    "1049310": "who reports hmda data",
+    "1049314": "who represents the president in the budget-making process",
+    "1049315": "what is obama's pension",
+    "1049329": "what is nyu ranked",
+    "944826": "when do the oscar awards start",
+    "1049335": "cost of binghamton university tuition",
+    "1049336": "what is nsr for heart rhythm",
+    "262906": "how long is a stress test procedure",
+    "1049340": "what is nrg stadium in atl",
+    "1049348": "what is nratv",
+    "262921": "how long is a tax lien allowed to stay on your credit file",
+    "262274": "how long is a dog's gestation",
+    "1049363": "what is not present when fermentation is used",
+    "262935": "how long is a term in congress?",
+    "1049368": "who s sherlock holmes",
+    "1049369": "cost of bag of apples",
+    "1049378": "what is not a secondary challenge of poverty?",
+    "787235": "what is progressive tax",
+    "8756": "______ are the spaces between nodes.",
+    "787255": "what is project charter in project management",
+    "262974": "how long is a typical car loan?",
+    "525119": "truth functional operator and definition",
+    "846": "2 liters is how many ounces",
+    "1092408": "mount carmel health system employee numbers",
+    "263002": "how long is a us senator term",
+    "787295": "what is project startup",
+    "263012": "how long is a voe valid",
+    "263018": "how long is a washington drivers license good for",
+    "1049455": "what is nosta",
+    "1049456": "what is nortriptyline prescribed for",
+    "1049458": "what is normal size of meatus",
+    "1049469": "who said i have met the enemy and it is us",
+    "1049470": "what is normal range for waist to hip ratio",
+    "525186": "tsa wages and benefits",
+    "1049478": "what is normal range for endometrial lining thickness after menopause",
+    "263052": "how long is a year in earth days on venus",
+    "525200": "tsh level ranges for pregnancy",
+    "263061": "how long is a zip code",
+    "830277": "what is the maximum dosage of acetaminophen",
+    "525229": "tsu rn to bsn online program",
+    "943": "2007 va disability compensation rates",
+    "525233": "tsun meaning",
+    "1049529": "who said past behavior predicts future",
+    "43677": "average salary vice president of real estate",
+    "1049553": "who said take only pictures, leave only footprints",
+    "263138": "how long is an appraisal good",
+    "525287": "tufts health plan number",
+    "525292": "tuition and fees and colorado technical university",
+    "1007": "2015 college half term holiday dates",
+    "1092436": "most selective colleges in hawaii",
+    "525314": "tuition cost at wcccd",
+    "1049603": "what is normal range for blood sugars",
+    "1049610": "what is normal psa for prostate in m",
+    "525324": "tuition cost for ole miss",
+    "1049615": "what is normal monocytes percent",
+    "787474": "what is propolis extract",
+    "263187": "how long is an fha case number good for",
+    "787481": "what is propranolol prescribed for",
+    "1049628": "what is normal heart rate resting",
+    "1049635": "what is normal fever in cat",
+    "263211": "how long is an nba game",
+    "263212": "how long is an nfl game time",
+    "787503": "what is propulsion",
+    "1049649": "what is normal delivery time for mail",
+    "787510": "what is propylene kit",
+    "263224": "how long is ankle swollen after twist",
+    "1049663": "who sang 'convoy'",
+    "1049664": "what is normal blood su",
+    "787522": "what is pros cons",
+    "1049667": "who sang Lead me On top gun soundtrack",
+    "43873": "average settlement for hearing damage and loss",
+    "1099": "2017 college football semi finals schedule",
+    "1049680": "who sang all these years",
+    "1049683": "what is noom?",
+    "1049684": "cost of attendance oregon state colleges",
+    "568164": "what are the characteristics of the eucalyptus",
+    "1049691": "what is non-cirrhotic portal",
+    "787549": "what is prosoft",
+    "1049697": "who sang baby i'm amazed by you",
+    "1137": "24 carat gold price",
+    "611859": "what county is renton washington in",
+    "1157": "25Kg BAG how much area will cover",
+    "525446": "tumor definition biology",
+    "787601": "what is protected cell company",
+    "263324": "how long is buttermilk safe to use",
+    "525470": "tumuli definition",
+    "1049761": "what is nocturnal myoclonus",
+    "263332": "how long is canned food safe",
+    "1092465": "most popular youtube categories",
+    "1049769": "what is noble rot",
+    "1195": "3 characteristics of protozoa replication",
+    "1049774": "cost of attendance eastern illinois university",
+    "1089385": "turbofan definition",
+    "226995": "how does nba player get paid",
+    "1049791": "what is njstart",
+    "263367": "how long is chicken good in the freezer?",
+    "1049805": "what is night vision autogate",
+    "1231": "3 other systems that work with the respiratory system",
+    "1049810": "who sang evil woman",
+    "1049817": "what is nids in it",
+    "525534": "turkey and china time difference",
+    "525535": "turkey bacon ranch wrap calories",
+    "1049830": "what is nicotine salt",
+    "1049834": "what is nick hagen most famous for",
+    "1099901": "hip moves",
+    "262356": "how long is a flight from sfo to germany",
+    "1049853": "cost of assisted living in colorado springs",
+    "787717": "what is protoplasm",
+    "1049863": "what is new adult romance",
+    "1288": "3/5 of 60",
+    "1289": "3/8 inch shank converted to mm",
+    "1049872": "cost of asphalt per sq ft",
+    "1049894": "who sang i feel wonderful tonight",
+    "787751": "what is proviable for dogs",
+    "1049909": "who sang i try",
+    "1049918": "what is neutron diffraction",
+    "1049920": "what is networking for business development",
+    "787784": "what is provocative allergy testing",
+    "525643": "turner's syndrome cardiac defects",
+    "1049934": "what is network ea",
+    "1049939": "who sang i;m a believer for shrek",
+    "263516": "how long is cough in children lasting",
+    "1049951": "what is net gain or loss",
+    "1049955": "what is net gain",
+    "1049959": "what is nesca in newton, ma?",
+    "1049960": "cost of an ice cream truck",
+    "1049965": "who sang just roll with it baby",
+    "464391": "nicholas woodman net worth",
+    "1038802": "who is stupid?",
+    "263539": "how long is csus transfer orientation",
+    "787830": "what is prwora",
+    "1049983": "what is needed for photosynthesis occur",
+    "1049984": "what is nectar mattress",
+    "1049985": "what is neatmouse",
+    "1049986": "what is ncts",
+    "525699": "tution cost for csulb",
+    "1049988": "what is ncpg",
+    "1049989": "what is nch so",
+    "787847": "what is psc",
+    "1049992": "what is naviscent research",
+    "787849": "what is pscp",
+    "1424": "401k roth qualified distribution rules",
+    "1092504": "most frequent number in powerball",
+    "787862": "what is pseudocode",
+    "1050007": "who sang louie louie louie louie",
+    "525723": "tv series benson cast",
+    "1050014": "cost of an average wedding cake",
+    "1050015": "what is natural history",
+    "1050019": "what is natural gas solutions",
+    "1050020": "cost of an average patio slab per sq ft",
+    "1050021": "what is nares",
+    "525734": "tv show shane cast",
+    "525745": "tvcca new london phone number",
+    "1050035": "who sang mr bojangles originally",
+    "525770": "twic renewal fee",
+    "525779": "twin tower adress",
+    "1050070": "who sang papa has a brown bag?",
+    "787928": "what is psyche sequelae",
+    "262396": "how long is a forwarding address good for",
+    "525811": "twitching eyelids causes",
+    "263668": "how long is flight from houston to puerto vallarta",
+    "263670": "how long is flight from hyd to dubai",
+    "787959": "what is psychological reciprocity?",
+    "1050107": "what is name of test for color vision",
+    "1050110": "who sang send me an angel",
+    "1050115": "who sang shout ",
+    "1047536": "who plays abby donovan",
+    "811852": "what is the common name for jade",
+    "785665": "what is postage",
+    "1550": "5k how long",
+    "1050144": "who sang stand by me?",
+    "1050149": "what is nafs",
+    "1576": "60x40 slab cost",
+    "1579": "613 585 area code",
+    "525868": "two rivers supervisory union",
+    "349789": "how to check thermometer",
+    "1050170": "what is nadh+",
+    "1050171": "what is nad+ used for",
+    "1050172": "who sang take a look ahead",
+    "1050178": "who sang that's how much i love you",
+    "1050180": "who sang the arms of an angel in code black?",
+    "43958": "average size of a chiweenie dog",
+    "1050184": "who sang the cupid shuffle",
+    "788042": "what is ptce 2",
+    "1050189": "who sang the iconic 'you're a mean one mr. grinch'",
+    "1050190": "who sang the kim possible theme song",
+    "262413": "how long is a futon",
+    "306105": "how much do jockeys have to weigh",
+    "525923": "tybee island weather in march",
+    "1050212": "who sang the original tennessee whiskey",
+    "1050224": "who sang the song  stay with me",
+    "1050231": "what is nabumetone used to treat",
+    "1050236": "what is n type semiconductors",
+    "525955": "tympanic cavity contains what fluid",
+    "768211": "what is mammogram screening",
+    "263815": "how long is ground beef good",
+    "1050249": "who sang the song grease",
+    "263818": "how long is ground beef good after thawing",
+    "1050253": "who sang the song i had the time of my life",
+    "1050254": "who sang the song i love rock & roll ?",
+    "525968": "tyndall credit union routing number",
+    "263825": "how long is ground beef good for refrigerated",
+    "788121": "what is pu coated leather",
+    "1050267": "what is mysugr",
+    "1697": "90 ounces of water equals gallon",
+    "1050275": "what is myrtus",
+    "263851": "how long is healing period after thyroidectomy",
+    "1066693": "why does calcium react with hydrochloric acid",
+    "480154": "price estimate for concrete slab",
+    "1724": "< symbol",
+    "526013": "type of antibiotic is oseltamivir",
+    "526021": "type of blood vessels and functions",
+    "61161": "calories in wine vs vodka",
+    "1050318": "what is mypcbackup",
+    "263889": "how long is if your on disability",
+    "263891": "how long is implantation after ovulation",
+    "263902": "how long is influenza contagious",
+    "788193": "what is public mec",
+    "1050342": "who sang united we stand divided we fall song",
+    "526056": "type of frisbee that goes the longest distance",
+    "263913": "how long is iodine half life",
+    "263917": "how long is it between periods",
+    "1050351": "cost of aflac dental insurance",
+    "1050352": "what is myofascial mean",
+    "1050353": "what is myelofibrosis cancer",
+    "1050354": "what is myelodysplastic/myeloproliferative neoplasm",
+    "1050363": "what is mycetoma",
+    "1050381": "what is my pc xendar",
+    "1050383": "who sang with iggy",
+    "788246": "what is pull systems",
+    "1819": "A person with a pH below 7.35 is considered to be in",
+    "43994": "average size of an american woman",
+    "788255": "what is pulmicort used for",
+    "1050404": "what is my employers alabama ein number",
+    "1050409": "who sang you light up my life",
+    "1050410": "what is mvd",
+    "1050417": "what is mutual plan",
+    "788275": "what is pulmonary oedema",
+    "1050420": "what is musical setting",
+    "263994": "how long is lake blanche trail hike?",
+    "526141": "types ant poison",
+    "1050432": "what is multiple myeloma life expectancy",
+    "306144": "how much do labradoodle weigh when there adults",
+    "1050440": "who says the quote if personality in an unbroken series",
+    "788299": "what is pulse deficit quizlet",
+    "1050448": "who screening recommendations",
+    "526179": "types of  lenses",
+    "1091193": "quadra meaning",
+    "788331": "what is pumpkin",
+    "1050482": "who sells joe boxer underwear",
+    "788345": "what is pune",
+    "264065": "how long is maternity leave us",
+    "1050503": "who served as chester arthur's first lady while he was president?",
+    "526219": "types of active transducers",
+    "1050509": "what is mucinex used to treat",
+    "1050510": "what is mu us",
+    "393540": "in millimeters what is the diameter of the scanning field of view, compound light microscope",
+    "1956": "All of the following resulted from the civil rights movement except",
+    "830449": "what is the maximum size luggage for carry on",
+    "788392": "what is pure data",
+    "788396": "what is pure imaginary in math",
+    "526262": "types of aircraft southampton to guernsey",
+    "1050559": "what is mt as a unit of mass",
+    "1050567": "who shot john f. kennedy",
+    "1993": "An infection that is spread by the blood or lymphatic system to large portions of the body is called:",
+    "1050572": "what is msla",
+    "264141": "how long is mono contagious for",
+    "788431": "what is puritus ani fast",
+    "314312": "how much does it cost for a crown without insurance ",
+    "264150": "how long is mount beacon",
+    "1050586": "what is msascuil.exe",
+    "786767": "what is printer epl",
+    "1050590": "what is ms and how do you get it",
+    "1091197": "python temperature converter code",
+    "526306": "types of anemia table",
+    "788452": "what is purported mean",
+    "1050597": "what is mrcp and frcp degree?",
+    "568316": "what are the colors of saturn's rings",
+    "788462": "what is purpose of conceptual framework",
+    "830461": "what is the maximum social security monthly benefit",
+    "788467": "what is purpose of glucose",
+    "788468": "what is purpose of ikea card",
+    "526331": "types of anti depression medication",
+    "1092608": "monroe ct population",
+    "526338": "types of antidepressant medications",
+    "788484": "what is purpose of sim card",
+    "2057": "Arlena name meaning",
+    "314314": "how much does it cost for a custom made door",
+    "1048922": "who presented casey affleck his oscar",
+    "264229": "how long is one orbit of iss",
+    "1050669": "what is mpt physical therapist",
+    "1050670": "who sing the song just swinging",
+    "264239": "how long is opened canned pumpkin good for",
+    "264243": "how long is optometry school",
+    "1050679": "who sings  this is how we do it",
+    "1050691": "what is motribe social network",
+    "788549": "what is pvbp",
+    "1050694": "what is motor starter",
+    "1050695": "what is motor dyspraxia",
+    "1050697": "what is most popular food",
+    "2123": "Average cost of a brokn leg",
+    "1050705": "who sings a whole lotta love?",
+    "1050707": "who sings about a girl",
+    "1050708": "cost of a home warranty from sears",
+    "264277": "how long is passport card good for before it expires",
+    "264284": "how long is peak time for morphine",
+    "1050718": "what is most conductive material",
+    "524645": "triangle shirtwaist fire definition",
+    "1050724": "who sings all in a day's work on styk album",
+    "699409": "what is a semi weapon?",
+    "1050728": "what is most commonly used financial performance measure when evaluating an organizations performance",
+    "1050730": "what is most common neurodegenerative disorder?",
+    "1050733": "what is moringa oleifera oil good for",
+    "1050739": "who sings amena e. core",
+    "1050742": "what is morganite value",
+    "1050743": "what is mooning",
+    "1050747": "who sings arabian nights aladdin",
+    "1048939": "who produced camp lo luchini",
+    "1005249": "which amino acids if together can form a salt bridge",
+    "1050775": "who sings bang the gong get it on",
+    "1050778": "what is monological illusion",
+    "1050779": "what is monogram",
+    "264349": "how long is pregnancy in a cat ?",
+    "1050786": "what is monetary damages mean",
+    "1050787": "what is monascus purpureus",
+    "526506": "types of bicycle pedals",
+    "1050796": "who sings beer run",
+    "1050803": "what is molecular sieve made from",
+    "1050805": "what is mokken scale",
+    "2235": "Bethel University was founded in what year",
+    "1050812": "what is mojara i",
+    "526530": "types of birds in florida",
+    "1050820": "who sings borderline",
+    "655734": "what dose does cyclobenzaprine come in",
+    "788682": "what is python's repl",
+    "1050830": "what is modern us history?",
+    "1050832": "what is moda operandi",
+    "1050833": "what is mock-up",
+    "1050835": "what is mochi ice cream desserts",
+    "1050836": "what is mnemonic instruction",
+    "1050837": "what is mizzles disease",
+    "830500": "what is the maximum tire year",
+    "264410": "how long is recovery from hemorrhoid banding",
+    "1050844": "what is mixed gas diving",
+    "788702": "what is qa?",
+    "788703": "what is qac medical term",
+    "264422": "how long is recovery time from gallbladder surgery",
+    "1050857": "who sings c'est la vie music",
+    "1050863": "what is mitomycin c used for",
+    "306217": "how much do little caesars employees make",
+    "1050874": "what is mirror",
+    "740919": "what is done with a pet scan",
+    "264445": "how long is roast beef good for after cooked",
+    "526591": "types of boogers",
+    "437291": "largest shipping day of year",
+    "1050893": "what is minoxidil tablets for",
+    "2322": "CAA definition",
+    "43997": "average size of an enzyme",
+    "264468": "how long is salmon good in the freezer",
+    "1050903": "who sings cotton eye joe",
+    "1050905": "who sings cotton eyed joe original",
+    "942814": "when did ultimate warrior die",
+    "1091208": "pustule medical definition",
+    "1050923": "what is milk thistle useful in treating?",
+    "526637": "types of breaker switches",
+    "1050936": "what is milk stork",
+    "1050953": "who sings dream on",
+    "526671": "types of business entities",
+    "1050961": "what is mikagura",
+    "1050976": "who sings evil woman",
+    "1050979": "cost for stone veneer installation",
+    "1050985": "what is migos",
+    "1005287": "when do monsoons occur in india",
+    "1050990": "who sings fever",
+    "1050991": "cost for replacing brakes.",
+    "788851": "what is qualfon",
+    "2423": "Can you send certified USMail to a PO Box?",
+    "830527": "what is the maximum workbook size in excel",
+    "1051013": "what is microsoft mpp file",
+    "1051015": "what is microsoft account and family setup",
+    "788875": "what is quality assurance in educational system",
+    "1051020": "who sings for hercules in hercules disney",
+    "264593": "how long is super bowl",
+    "264594": "how long is super bowl game",
+    "830531": "what is the maximum yearly retirement contributions",
+    "1051029": "who sings gangnam style",
+    "1051033": "who sings get here if you can",
+    "1051044": "what is michelangelo's death year",
+    "1051048": "who sings give your heart a break",
+    "1051052": "who sings gold on the ceiling just",
+    "788923": "what is quantum of force",
+    "788930": "what is quark",
+    "1051078": "what is mft stand for?",
+    "1051079": "what is mewtwo",
+    "1092686": "mimosa cove design resources",
+    "526806": "types of cells",
+    "1051095": "who sings hey good looking",
+    "1051096": "what is metta?",
+    "526809": "types of cells in bone tissue",
+    "1051108": "what is methylphenidate generic for",
+    "1051109": "age that counts as a juvenile",
+    "1051110": "what is methylchloroisothiazolinone used for soap",
+    "1051111": "what is metho",
+    "1051112": "what is methanogens",
+    "1051113": "what is methanal",
+    "1051115": "what is metabolic panel comprehensive",
+    "1051116": "what is metabolic acidosis overview etiology",
+    "788983": "what is quercitin",
+    "526840": "types of cervical cancer adenocarcinoma",
+    "881718": "what network is supergirl on",
+    "1051133": "who sings i can make your hands clap",
+    "1051134": "what is mestinon used for",
+    "1051135": "what is merritt?",
+    "1051138": "what is merger",
+    "1051139": "what is mercury name",
+    "1051140": "what is mercury a",
+    "1051142": "what is mercon lv transmission fluid",
+    "2569": "Consumer protection disputing a charge how long does the merchant have?",
+    "218882": "how do i pit cherries",
+    "1051176": "who sings i never knew love like this before",
+    "1051179": "who sings i still get jealous",
+    "789037": "what is quillaia",
+    "789042": "what is quilt used for",
+    "2619": "DJ Paul Net Worth 2014",
+    "1051196": "who sings i'll never get over you",
+    "1051198": "who sings i'll stand by you",
+    "1051207": "who sings i'm just a love machine",
+    "1051211": "what is mepap certification",
+    "1051212": "what is mental health first aid",
+    "1051214": "what is meningitis.",
+    "1051223": "what is menhir",
+    "264793": "how long is the exploration phase of mining",
+    "1051226": "what is memory page table",
+    "1051229": "what is memcached",
+    "1051232": "who sings if you like pina colada",
+    "1051234": "who sings if you were a better man",
+    "264803": "how long is the fellowship of the ring movie",
+    "789092": "what is quiverfull",
+    "393662": "in social studies define",
+    "1051256": "what is melamine board",
+    "1051257": "what is megatron called",
+    "264827": "how long is the flight from chicago to cairo",
+    "526972": "types of clothing used with with synthetic fibers",
+    "264835": "how long is the flight from dfw to punta cana",
+    "1051270": "who sings it's just a little crush",
+    "526984": "types of coffee drinks mocha latte",
+    "1051279": "what is medjool dates",
+    "1051281": "what is medium well burger",
+    "1051285": "what is medicine acyclovir used for",
+    "1051287": "what is medication used for venlafaxine",
+    "1051288": "what is medication used for olanzapine",
+    "2716": "Destiny Cheat Codes for Weapons",
+    "527009": "types of communication tools",
+    "527013": "types of community outreach activities",
+    "1051307": "what is medical term for neck fusion?",
+    "264879": "how long is the flight from san diego to los angeles",
+    "1051317": "what is medical term arvc means",
+    "1051322": "who sings let it ride?",
+    "1051327": "what is medical surveillance programs.",
+    "1051329": "what is medical phi",
+    "1051330": "what is medical mutual",
+    "1051333": "what is medical assistant?",
+    "1051339": "what is medical aki",
+    "1051341": "what is med menest",
+    "264910": "how long is the flu communicable",
+    "1051344": "what is mechanical energy related to",
+    "1051352": "what is mechanical advantages in science terms",
+    "1051354": "what is measles mumps and rubella",
+    "789212": "what is racking beer",
+    "1051362": "what is meant by the unit dose supply method?",
+    "1051364": "who sings love shack baby",
+    "261964": "how long is a 2x6",
+    "1051372": "cost for child cineplex",
+    "2798": "Does Suddenlink Carry ESPN3",
+    "1051376": "what is meant by solution concentration and what are the different ways to express the concentration of a solution?",
+    "789239": "what is radians",
+    "527111": "types of cordless cutting tools",
+    "1051401": "what is meant by robust software",
+    "527114": "types of corporate strategy",
+    "1051405": "what is meant by continental drift? question approach",
+    "1051406": "what is meaning of phrasecome at me, bro?",
+    "527121": "types of cosmetic surgery pr",
+    "527124": "types of cotton",
+    "527125": "types of cotton cloth",
+    "1051414": "what is meaning of hook up?",
+    "1051420": "what is meaning of allude?",
+    "1051422": "what is mean streaming",
+    "1051426": "what is mean auditor",
+    "1051433": "who sings my little  runaway",
+    "789292": "what is radio miraya",
+    "265011": "how long is the insulin in a humalog pen good",
+    "527158": "types of crown material",
+    "1051448": "what is mcas all",
+    "1051454": "what is mcag",
+    "527171": "types of cultures in the workplace",
+    "1051462": "who sings nobody called today",
+    "527176": "types of currency of iceland",
+    "527179": "types of curry",
+    "1051475": "what is mca and get weekly paychecks fake?",
+    "789332": "what is radiofrequency ablation?",
+    "1051479": "what is mbe certified",
+    "1051489": "who sings on the road again",
+    "1051491": "what is maximum upload video on instagram",
+    "1051495": "what is maximum image resolution",
+    "1051504": "who sings open arms",
+    "1051509": "who sings paper dolls with rob thomas",
+    "1051520": "what is maxim",
+    "1051521": "what is mawmaw",
+    "1051522": "what is matte release",
+    "1051523": "what is matilda jane clothing",
+    "265096": "how long is the movie shack",
+    "1051530": "what is mastoidectomy",
+    "1051537": "what is mastic in construction",
+    "2962": "Explain what a bone scan is and what it is used for.",
+    "1051539": "who sings rack city",
+    "1051543": "what is massachusetts minimum wage",
+    "1051544": "what is mass nu",
+    "1051546": "who sings ram truck commercial",
+    "1051551": "what is marzanna",
+    "1051552": "cost fixing cracked basement floor",
+    "1051553": "what is martha",
+    "1051554": "what is marriage wall",
+    "1051555": "what is marr",
+    "1051559": "who sings remember when",
+    "1051569": "what is market based pay",
+    "1051571": "what is marilyn manson music called",
+    "1051580": "what is march for history month",
+    "527293": "types of dill plants",
+    "1051583": "what is mannitol in",
+    "1051584": "what is manic",
+    "265160": "how long is the planet in miles",
+    "1051593": "what is man hours",
+    "1049079": "who published first measure of intelligence",
+    "1051599": "what is man hour",
+    "1051603": "what is mama",
+    "527318": "types of disfluencies",
+    "1051610": "what is malpractice?",
+    "1051611": "what is malodorous",
+    "1051612": "what is malignancy mean",
+    "1051613": "what is malea",
+    "1092773": "merchandising meaning in urdu",
+    "1051616": "what is magnesium,",
+    "1051617": "what is magnesium good for in the human body",
+    "265189": "how long is the puppy chewing phase",
+    "3053": "Foods to Feed A 10 Month Old",
+    "1051631": "what is made out of quartz",
+    "1051635": "what is made in minnesota",
+    "789493": "what is ranexa for",
+    "961705": "when was the little prince book lished?",
+    "1051643": "what is macd in telecom",
+    "1051646": "what is mac os based on",
+    "1051651": "what is m&p stand for",
+    "1051652": "what is m benefit solutions",
+    "1051653": "what is lyons",
+    "1051654": "what is lumibrite",
+    "1051655": "what is lumens]",
+    "1051656": "what is ludens honey lemon",
+    "786946": "what is process mapping software",
+    "1051662": "what is lubrication for",
+    "1051670": "who sings so sick",
+    "1051675": "what is lsvt speech therapy for parkinson's",
+    "1051676": "what is lsr stand for",
+    "1038859": "what is the goddess of agriculture in greek mythology",
+    "1051688": "cost caregiver vs assisted living",
+    "789557": "what is rapidgate",
+    "789558": "what is rapidiptv",
+    "1091234": "proton pump used for what",
+    "1051704": "what is lotusland santa barbara",
+    "1051705": "what is lottery age to purchase a ticket in",
+    "1051710": "what is lota",
+    "1051723": "what is lone star trim",
+    "3151": "Ginevra name meaning",
+    "1051732": "what is lomi massage",
+    "1051733": "what is lollollol",
+    "1051735": "who sings sugar sugar",
+    "265304": "how long is the trainer flagger instructor certification good for",
+    "1051738": "what is logic unit",
+    "1051755": "who sings take this world by storm",
+    "918036": "what was cameron from wwe?",
+    "1051774": "who sings the beach song do the bop",
+    "789640": "what is raufoss ammo",
+    "1051786": "what is lochia",
+    "1051791": "who sings the cover of cat stevens wild world",
+    "1051796": "what is local festival",
+    "789658": "what is raw organic creamed honey",
+    "1051804": "what is loam?",
+    "1051808": "what is lmis",
+    "265378": "how long is tomb raider",
+    "789670": "what is raynaud's disease symptoms",
+    "789675": "what is rayon made out of",
+    "1051825": "what is live soda",
+    "175306": "down editing definition",
+    "1051840": "what is litepay",
+    "1051841": "what is listless",
+    "3267": "Hailey name meaning",
+    "3268": "Han name meaning chinese",
+    "1051847": "who sings the oc theme song",
+    "527568": "types of ethnic foods list",
+    "1092814": "medicine that stops runny nose and cough",
+    "1051866": "who sings the reggae version thinking out loud",
+    "1051867": "what is lisinopril treat",
+    "1051871": "who sings the rubberband man",
+    "527585": "types of exercise?",
+    "265442": "how long is uncooked hamburger meat good for",
+    "1051877": "who sings the song 8675 jenny",
+    "1051878": "cost and management accounting",
+    "1091240": "acute hemolytic reaction what is",
+    "1051886": "who sings the song animals animals",
+    "1051890": "who sings the song bang your head",
+    "527604": "types of expository essay",
+    "1051899": "what is liqueur a",
+    "1051902": "what is lips",
+    "1051903": "what is lipo c injections",
+    "1051907": "what is linklaters",
+    "1051911": "who sings the song charlie chaplin",
+    "527625": "types of eyebrow shapes",
+    "1051914": "what is linguistics?",
+    "1051920": "what is liner panel in a pole building",
+    "830680": "what is the meaning of Barry the male name",
+    "789792": "what is reactive urothelial cells",
+    "265507": "how long is winter how long is the winter time",
+    "1051942": "what is limericks",
+    "1051943": "cost alternative to restasis",
+    "1051950": "who sings the song i want to kiss you all over",
+    "1051955": "what is light year used for",
+    "3387": "How Much is Blanket Jackson Worth",
+    "789833": "what is real wasabi made of",
+    "1051989": "who sings the song rags to riches?",
+    "265558": "how long isaac live",
+    "568549": "what are the costs of coolsculpting?",
+    "1052016": "what is life expectancy once cancer reach your",
+    "527730": "types of fishes in the sea",
+    "1052019": "what is lidocaine injection used for",
+    "1052049": "what is libor advantage rate",
+    "527769": "types of flowering cactus",
+    "1052058": "who sings the theme song from the sopranos",
+    "1052059": "what is liberty hill, texas zip code",
+    "787014": "what is prodromal symptoms",
+    "3495": "How do falling prices affect supply?",
+    "1052087": "what is lexora leader publication",
+    "1052088": "cosmogonies definition",
+    "1052094": "what is leverback",
+    "789961": "what is recoil;",
+    "527820": "types of foot deformity",
+    "1052111": "who sings throw me a rope",
+    "1052113": "what is lemonwire",
+    "1052115": "what is lemon party",
+    "1052118": "what is legal name for torch down roofing",
+    "1092857": "medical meaning of somatic",
+    "1052124": "who sings time won't let me",
+    "1052127": "what is legal age for consent in michigan",
+    "527842": "types of foundation repairs",
+    "789988": "what is recommended mg per day of turmeric",
+    "527853": "types of french fry cuts",
+    "961789": "when was the march on washington?",
+    "1052146": "what is leflunomide used to treat",
+    "265717": "how long keep IRS records",
+    "265729": "how long keep financial records",
+    "1052163": "who sings walking in the air",
+    "1052167": "what is leaseweb",
+    "1052169": "what is lease automatic custody transfer seal",
+    "699651": "what is a sham cover",
+    "1052181": "what is lead shot",
+    "961796": "when was the marseillaise written?",
+    "790042": "what is recreational water illness",
+    "1052193": "cortina what's the statute of frauds",
+    "1052194": "what is latin language definition",
+    "1052195": "what is latency in communication",
+    "1052196": "what is larger kb versus mb",
+    "1052202": "what is landscape analysis",
+    "790059": "what is rectocele?",
+    "527916": "types of ginger plants",
+    "1030723": "what is the uncertainty of the position of the bacterium",
+    "1052214": "what is landing gear",
+    "1052218": "what is lambda in biology",
+    "790079": "what is recuse meaning",
+    "1052224": "who sings which parts in highwayman",
+    "1052229": "what is lacerate",
+    "1052231": "what is labskaus",
+    "790088": "what is recycling works",
+    "1052236": "what is laas technology",
+    "790094": "what is red gum honey",
+    "830733": "what is the meaning of a viral disease",
+    "790100": "what is red pepper flakes",
+    "265816": "how long mercury rotates",
+    "1052251": "what is kudu sync",
+    "1052252": "what is kubota",
+    "1052254": "what is kt tape made of",
+    "1052255": "what is kriging interpolation method",
+    "1052272": "what is kotaku",
+    "1052274": "what is korean seafood pancake",
+    "1052275": "what is korea second largest city",
+    "1052277": "what is kinsey most known for",
+    "527992": "types of guitar string thickness",
+    "265864": "how long must an individual keep statements",
+    "790153": "what is redprairie software",
+    "3722": "How long does it take to boil an egg",
+    "1052301": "what is kingdom new lands",
+    "1052303": "who sings you sexy thing",
+    "1052309": "who sings you've got a friend in me toy story",
+    "1052310": "what is kinetica",
+    "1052311": "what is kilo",
+    "1052313": "cortana when is spring equinox",
+    "790178": "what is reentry court",
+    "265891": "how long must one work in education in order to become an administrator",
+    "1052330": "what is kicksend",
+    "1052335": "what is khalid",
+    "262771": "how long is a pregnancy for apple snails?",
+    "1052342": "who song take me to the river in movie big little lies",
+    "1052343": "who song the tune  bring it home to me",
+    "1052345": "who song they don't know  originally",
+    "1052347": "who speaks mandarin chinese",
+    "1052350": "who speaks swahili in africa",
+    "790212": "what is refinishing a floor",
+    "655990": "what drugs are commonly used to treat adhd",
+    "1052363": "cortana when do we change time",
+    "1052366": "what is keynote app used for",
+    "528086": "types of herding dogs breeds",
+    "1052377": "who starred in  superman",
+    "790234": "what is refm facilities management",
+    "1052382": "what is kevin spacey doing now",
+    "1052388": "who starred in bridges of madison county",
+    "265960": "how long nyquil kicks in",
+    "1052396": "who starred in easy rider?",
+    "1052399": "what is ken burns style",
+    "1052401": "what is keepin",
+    "528117": "types of honeysuckle",
+    "265975": "how long of a flight from new york to madrid",
+    "1052408": "who starred in herbie movies",
+    "265982": "how long of a period do you have to appeal a case in civil court",
+    "1052415": "what is kadaza",
+    "1052421": "who starred in movie reckless?",
+    "1052427": "who starred in north to alaska",
+    "838116": "what is the origin of the word punk?",
+    "1052430": "what is kadai paneer",
+    "790288": "what is refugee?",
+    "528145": "types of humbucker pickups",
+    "1052438": "what is k-lite",
+    "1052440": "what is jungling in league of legends",
+    "528155": "types of hydraulic systems",
+    "266032": "how long on average does it take to close on a va home loan?",
+    "266036": "how long on average does someone deal with alzheimer's",
+    "790330": "what is regiscope?",
+    "1052476": "what is juggernog",
+    "1052486": "what is juana",
+    "1049228": "who recorded wildflower (original hit version)",
+    "306488": "how much do new staff accountants make",
+    "3934": "How much does a professional Drummer charge",
+    "1052519": "who starred in. pursuit of happyness?",
+    "266088": "how long per light year",
+    "1052524": "who starred.in the miracle.worker",
+    "1052527": "what is jsoup used for",
+    "1052528": "what is jsoc",
+    "1092926": "meaning of the word jessie",
+    "266102": "how long pink eye contagious after drops",
+    "1052537": "who stars in forever my girl",
+    "1052538": "who stars in hitch",
+    "1052548": "who stars in rocketman",
+    "1005548": "which area would contain an abundance of vesicles containing neurotransmitter?",
+    "1052554": "who stars in the movie collision",
+    "1052557": "what is jrcc",
+    "1052563": "who stars in the tv show taken",
+    "528278": "types of iron lines cornea",
+    "1052579": "what is jojoba seeds",
+    "1052580": "who started black history month and what year",
+    "1052585": "what is john wayne real name",
+    "1092936": "meaning of the picketed",
+    "266163": "how long ribs in bbq sauce",
+    "1052598": "what is john adams background?",
+    "1052599": "what is johannite",
+    "4024": "How much does the average american spend on fitness",
+    "1091264": "product level activity define",
+    "266177": "how long schooling for lvn and salaries for california",
+    "528323": "types of keyboards",
+    "1052614": "what is joey logano's son's name",
+    "1052615": "what is jishuken",
+    "1052620": "what is jic threads",
+    "1052627": "who started legalism",
+    "1052628": "who started mcdonald's fast food",
+    "1052631": "what is jeremiah rhodes best known for?",
+    "1052632": "what is jennifer aniston's bra size",
+    "1091265": "product extension definition",
+    "790491": "what is rejuvelac",
+    "528348": "types of kindle paperwhite",
+    "1052640": "what is jelly in the us",
+    "790498": "what is relapsing polychondriti",
+    "1052646": "age requirement for reserve commission",
+    "266216": "how long should a baby be on formula",
+    "528362": "types of kvm switches",
+    "1052672": "what is jaumo?",
+    "1052673": "what is japan movement",
+    "1052674": "what is james hardie color plus?",
+    "528395": "types of laser treatments for wrinkles",
+    "1052689": "what is jamarcus russell net worth",
+    "1052690": "what is jamaican english",
+    "528407": "types of lawn grasses in nc",
+    "266264": "how long should a central air conditioner last",
+    "1052704": "what is it hydrosphere",
+    "830812": "what is the meaning of astute",
+    "1052717": "who started the tesla car company",
+    "1052721": "what is it called when two rivers meet",
+    "4156": "How to Delete Bing from Computer",
+    "1052734": "cortana what is the weather like in memphis tn",
+    "790592": "what is remanufacturing company",
+    "1092960": "meaning of seep",
+    "331842": "how often does a total solar eclipse happen",
+    "266309": "how long should a divorce take",
+    "790598": "what is remedy",
+    "1052752": "what is it called when a trait is controlled by several genes",
+    "1052755": "what is isotonic biology",
+    "612366": "what county is sanford fl in",
+    "262841": "how long is a schedule 2 prescription valid"
+  },
+  "qrels": {
+    "1048578": [
+      "7187234"
+    ],
+    "1048579": [
+      "7187227"
+    ],
+    "1048582": [
+      "7187185"
+    ],
+    "1048583": [
+      "7187177"
+    ],
+    "1048585": [
+      "7187158"
+    ],
+    "1048587": [
+      "7187129"
+    ],
+    "262156": [
+      "7306593"
+    ],
+    "2": [
+      "4339068"
+    ],
+    "1048600": [
+      "7187117"
+    ],
+    "1048601": [
+      "7187089"
+    ],
+    "524318": [
+      "132459",
+      "7492157"
+    ],
+    "524332": [
+      "740662"
+    ],
+    "1048621": [
+      "7789933"
+    ],
+    "1048624": [
+      "1267390"
+    ],
+    "1048625": [
+      "143101"
+    ],
+    "52": [
+      "7466019"
+    ],
+    "524341": [
+      "7541279",
+      "7541281"
+    ],
+    "58": [
+      "7571934"
+    ],
+    "1048636": [
+      "7187045"
+    ],
+    "262207": [
+      "7979967"
+    ],
+    "1048642": [
+      "7187023"
+    ],
+    "1048645": [
+      "7187002"
+    ],
+    "786502": [
+      "7858894"
+    ],
+    "1038758": [
+      "7203806"
+    ],
+    "1048656": [
+      "7186989"
+    ],
+    "1048657": [
+      "7186982"
+    ],
+    "262230": [
+      "7352295"
+    ],
+    "1048663": [
+      "7186970"
+    ],
+    "87396": [
+      "7961329"
+    ],
+    "1048667": [
+      "7186942"
+    ],
+    "1048668": [
+      "7186928"
+    ],
+    "1048669": [
+      "7186909"
+    ],
+    "1048670": [
+      "7186893"
+    ],
+    "480613": [
+      "7557911"
+    ],
+    "1048672": [
+      "7186877"
+    ],
+    "1048673": [
+      "7186869"
+    ],
+    "786531": [
+      "3742291"
+    ],
+    "1048680": [
+      "7186861"
+    ],
+    "786537": [
+      "2936682"
+    ],
+    "322978": [
+      "7902912"
+    ],
+    "1048699": [
+      "7186851"
+    ],
+    "1048706": [
+      "7186845",
+      "7186847"
+    ],
+    "1048708": [
+      "7186822"
+    ],
+    "786568": [
+      "7740706"
+    ],
+    "1048717": [
+      "7841376"
+    ],
+    "524435": [
+      "7572641"
+    ],
+    "1048725": [
+      "7884103"
+    ],
+    "1048727": [
+      "7860048"
+    ],
+    "1048730": [
+      "7186795"
+    ],
+    "262302": [
+      "7367612"
+    ],
+    "524447": [
+      "7573433",
+      "7573434",
+      "7573435"
+    ],
+    "1048740": [
+      "7742522"
+    ],
+    "961222": [
+      "7916628"
+    ],
+    "786598": [
+      "7869749"
+    ],
+    "1048754": [
+      "7186779"
+    ],
+    "184": [
+      "765726"
+    ],
+    "1048761": [
+      "7186775"
+    ],
+    "262330": [
+      "7995605"
+    ],
+    "43722": [
+      "7712345"
+    ],
+    "1048779": [
+      "7186762"
+    ],
+    "1048786": [
+      "7186747"
+    ],
+    "1048790": [
+      "7186716"
+    ],
+    "1048795": [
+      "7186664"
+    ],
+    "262365": [
+      "7361602"
+    ],
+    "222": [
+      "7681245"
+    ],
+    "786658": [
+      "7804405"
+    ],
+    "786660": [
+      "7787795"
+    ],
+    "1048811": [
+      "465790"
+    ],
+    "1048812": [
+      "7927438"
+    ],
+    "786674": [
+      "7936549"
+    ],
+    "1048819": [
+      "7186639"
+    ],
+    "262392": [
+      "7502156"
+    ],
+    "1048825": [
+      "511870"
+    ],
+    "1048828": [
+      "7186598"
+    ],
+    "254": [
+      "7373204"
+    ],
+    "255": [
+      "7629892"
+    ],
+    "786689": [
+      "7729899"
+    ],
+    "605793": [
+      "7681767"
+    ],
+    "1048836": [
+      "7732555"
+    ],
+    "1048843": [
+      "7186575"
+    ],
+    "1048844": [
+      "7186564"
+    ],
+    "1048846": [
+      "7186549"
+    ],
+    "1048848": [
+      "7186531"
+    ],
+    "1048849": [
+      "7186526"
+    ],
+    "1048851": [
+      "7186496"
+    ],
+    "524569": [
+      "2391964",
+      "7596550"
+    ],
+    "524574": [
+      "7663032"
+    ],
+    "1048868": [
+      "7186466"
+    ],
+    "1048871": [
+      "4146836"
+    ],
+    "1048876": [
+      "7887620"
+    ],
+    "1048917": [
+      "7186456"
+    ],
+    "1048919": [
+      "7723496",
+      "7723498"
+    ],
+    "524634": [
+      "836359"
+    ],
+    "262495": [
+      "7966055"
+    ],
+    "786786": [
+      "7807976"
+    ],
+    "1048931": [
+      "7186449"
+    ],
+    "786791": [
+      "7814384"
+    ],
+    "1084142": [
+      "7131006"
+    ],
+    "362": [
+      "2371093",
+      "393407",
+      "646001"
+    ],
+    "1048944": [
+      "7957949"
+    ],
+    "370": [
+      "7897935"
+    ],
+    "1048947": [
+      "7737129"
+    ],
+    "524660": [
+      "7644565"
+    ],
+    "1048949": [
+      "7768451"
+    ],
+    "1048955": [
+      "7813443"
+    ],
+    "862426": [
+      "7902591"
+    ],
+    "131137": [
+      "8007813"
+    ],
+    "1048968": [
+      "7186438"
+    ],
+    "786835": [
+      "7887912"
+    ],
+    "524693": [
+      "7482942"
+    ],
+    "1048983": [
+      "7186435"
+    ],
+    "409": [
+      "7991069"
+    ],
+    "524699": [
+      "7697755"
+    ],
+    "1048989": [
+      "7186427"
+    ],
+    "1048994": [
+      "7937784"
+    ],
+    "1048995": [
+      "7895593"
+    ],
+    "786852": [
+      "4109792"
+    ],
+    "1048997": [
+      "7186402"
+    ],
+    "786857": [
+      "7777221"
+    ],
+    "524717": [
+      "7634784"
+    ],
+    "524722": [
+      "7471189"
+    ],
+    "873886": [
+      "7913234"
+    ],
+    "524733": [
+      "3399995"
+    ],
+    "1049022": [
+      "7186391"
+    ],
+    "1049024": [
+      "7186369"
+    ],
+    "524737": [
+      "655718"
+    ],
+    "786882": [
+      "2956403"
+    ],
+    "786894": [
+      "7746942"
+    ],
+    "1049041": [
+      "7186348"
+    ],
+    "262615": [
+      "7301036"
+    ],
+    "1049050": [
+      "7186344"
+    ],
+    "524764": [
+      "7675170"
+    ],
+    "484": [
+      "7784059",
+      "7784066"
+    ],
+    "524773": [
+      "7677954"
+    ],
+    "786918": [
+      "7736237"
+    ],
+    "480680": [
+      "5719325"
+    ],
+    "262643": [
+      "7734794"
+    ],
+    "262647": [
+      "7783786"
+    ],
+    "786937": [
+      "7867876"
+    ],
+    "1049085": [
+      "7186309"
+    ],
+    "1049086": [
+      "7186301"
+    ],
+    "1049089": [
+      "7186288"
+    ],
+    "514": [
+      "4465617",
+      "7721856"
+    ],
+    "262232": [
+      "7395566"
+    ],
+    "524827": [
+      "7445506"
+    ],
+    "524833": [
+      "7522635"
+    ],
+    "262690": [
+      "7153761"
+    ],
+    "524835": [
+      "7499564"
+    ],
+    "524838": [
+      "7642918"
+    ],
+    "47140": [
+      "7971131"
+    ],
+    "524848": [
+      "7670356"
+    ],
+    "1049140": [
+      "7186261"
+    ],
+    "524382": [
+      "2593725"
+    ],
+    "787000": [
+      "7751362"
+    ],
+    "787001": [
+      "7846670"
+    ],
+    "1049146": [
+      "7810183"
+    ],
+    "1049150": [
+      "7186250"
+    ],
+    "579": [
+      "7362513"
+    ],
+    "1049157": [
+      "7786699"
+    ],
+    "262729": [
+      "7522578"
+    ],
+    "1049164": [
+      "7186239"
+    ],
+    "787025": [
+      "1625255"
+    ],
+    "393317": [
+      "7596420"
+    ],
+    "1064963": [
+      "7974172",
+      "7974173"
+    ],
+    "1049189": [
+      "5228399"
+    ],
+    "787053": [
+      "3038704"
+    ],
+    "1049200": [
+      "7850460"
+    ],
+    "262775": [
+      "7939649"
+    ],
+    "742847": [
+      "7511846"
+    ],
+    "1049221": [
+      "7922017"
+    ],
+    "1049225": [
+      "7848536"
+    ],
+    "1049231": [
+      "7186210"
+    ],
+    "1049239": [
+      "3135398"
+    ],
+    "1049242": [
+      "7186202"
+    ],
+    "787101": [
+      "7753888"
+    ],
+    "1049250": [
+      "7186193"
+    ],
+    "873927": [
+      "3539977"
+    ],
+    "1049260": [
+      "7186168"
+    ],
+    "1049261": [
+      "7186143"
+    ],
+    "830238": [
+      "3719812",
+      "7449069"
+    ],
+    "697": [
+      "7318446"
+    ],
+    "262849": [
+      "1006820"
+    ],
+    "524994": [
+      "7519406"
+    ],
+    "1049286": [
+      "7186130"
+    ],
+    "1049287": [
+      "7750334"
+    ],
+    "1049296": [
+      "7805320"
+    ],
+    "525009": [
+      "896310"
+    ],
+    "1049309": [
+      "7186092"
+    ],
+    "1049310": [
+      "7962393"
+    ],
+    "1049314": [
+      "7761411"
+    ],
+    "1049315": [
+      "7186085"
+    ],
+    "1049329": [
+      "7186077"
+    ],
+    "944826": [
+      "303454"
+    ],
+    "1049335": [
+      "7186061"
+    ],
+    "1049336": [
+      "7186044"
+    ],
+    "262906": [
+      "1185382"
+    ],
+    "1049340": [
+      "7186026"
+    ],
+    "1049348": [
+      "7186023"
+    ],
+    "262921": [
+      "7480415"
+    ],
+    "262274": [
+      "1276308"
+    ],
+    "1049363": [
+      "7185978"
+    ],
+    "262935": [
+      "7463071"
+    ],
+    "1049368": [
+      "7911799"
+    ],
+    "1049369": [
+      "2850528"
+    ],
+    "1049378": [
+      "7185960"
+    ],
+    "787235": [
+      "6922176"
+    ],
+    "8756": [
+      "7982167"
+    ],
+    "787255": [
+      "4216689"
+    ],
+    "262974": [
+      "7301412"
+    ],
+    "525119": [
+      "7615016"
+    ],
+    "846": [
+      "7339498"
+    ],
+    "1092408": [
+      "7832603"
+    ],
+    "263002": [
+      "4153904"
+    ],
+    "787295": [
+      "7852046"
+    ],
+    "263012": [
+      "7067532"
+    ],
+    "263018": [
+      "7357220"
+    ],
+    "1049455": [
+      "1421196"
+    ],
+    "1049456": [
+      "6121038"
+    ],
+    "1049458": [
+      "7185925"
+    ],
+    "1049469": [
+      "7813706"
+    ],
+    "1049470": [
+      "7185894"
+    ],
+    "525186": [
+      "7704386",
+      "7704392"
+    ],
+    "1049478": [
+      "7185885"
+    ],
+    "263052": [
+      "7351735"
+    ],
+    "525200": [
+      "7539727"
+    ],
+    "263061": [
+      "1135749"
+    ],
+    "830277": [
+      "7910356"
+    ],
+    "525229": [
+      "7529430"
+    ],
+    "943": [
+      "7389241"
+    ],
+    "525233": [
+      "7483465"
+    ],
+    "1049529": [
+      "7883975"
+    ],
+    "43677": [
+      "7600516"
+    ],
+    "1049553": [
+      "7843823"
+    ],
+    "263138": [
+      "7529684"
+    ],
+    "525287": [
+      "7684019"
+    ],
+    "525292": [
+      "1181230"
+    ],
+    "1007": [
+      "7330517"
+    ],
+    "1092436": [
+      "7830084",
+      "7830090"
+    ],
+    "525314": [
+      "7488845"
+    ],
+    "1049603": [
+      "7185874"
+    ],
+    "1049610": [
+      "7185861"
+    ],
+    "525324": [
+      "7656719"
+    ],
+    "1049615": [
+      "7185851"
+    ],
+    "787474": [
+      "1625928"
+    ],
+    "263187": [
+      "7842902"
+    ],
+    "787481": [
+      "7734419"
+    ],
+    "1049628": [
+      "7185844"
+    ],
+    "1049635": [
+      "7185838"
+    ],
+    "263211": [
+      "4525860"
+    ],
+    "263212": [
+      "6683655"
+    ],
+    "787503": [
+      "7859489"
+    ],
+    "1049649": [
+      "7185802"
+    ],
+    "787510": [
+      "7892638"
+    ],
+    "263224": [
+      "6611529"
+    ],
+    "1049663": [
+      "7724617"
+    ],
+    "1049664": [
+      "7185801"
+    ],
+    "787522": [
+      "7865235"
+    ],
+    "1049667": [
+      "7933598"
+    ],
+    "43873": [
+      "7485553",
+      "7485554"
+    ],
+    "1099": [
+      "7383408"
+    ],
+    "1049680": [
+      "7830816"
+    ],
+    "1049683": [
+      "7185773"
+    ],
+    "1049684": [
+      "7185761"
+    ],
+    "568164": [
+      "7529802"
+    ],
+    "1049691": [
+      "7185755"
+    ],
+    "787549": [
+      "7941076"
+    ],
+    "1049697": [
+      "4622050"
+    ],
+    "1137": [
+      "7849056"
+    ],
+    "611859": [
+      "7668431"
+    ],
+    "1157": [
+      "7888759"
+    ],
+    "525446": [
+      "7519518"
+    ],
+    "787601": [
+      "6288453",
+      "7883237"
+    ],
+    "263324": [
+      "4978504"
+    ],
+    "525470": [
+      "7548556"
+    ],
+    "1049761": [
+      "7185692"
+    ],
+    "263332": [
+      "2452377"
+    ],
+    "1092465": [
+      "7827847"
+    ],
+    "1049769": [
+      "7185673"
+    ],
+    "1195": [
+      "7386049"
+    ],
+    "1049774": [
+      "7185662"
+    ],
+    "1089385": [
+      "7085404"
+    ],
+    "226995": [
+      "7470168"
+    ],
+    "1049791": [
+      "7185644"
+    ],
+    "263367": [
+      "87243"
+    ],
+    "1049805": [
+      "7185612"
+    ],
+    "1231": [
+      "1610017",
+      "7317781",
+      "7317786"
+    ],
+    "1049810": [
+      "7824358"
+    ],
+    "1049817": [
+      "7185585"
+    ],
+    "525534": [
+      "7560662"
+    ],
+    "525535": [
+      "7604235"
+    ],
+    "1049830": [
+      "7185583"
+    ],
+    "1049834": [
+      "7185572"
+    ],
+    "1099901": [
+      "7213113"
+    ],
+    "262356": [
+      "7426870"
+    ],
+    "1049853": [
+      "7185557"
+    ],
+    "787717": [
+      "7790215"
+    ],
+    "1049863": [
+      "7185554"
+    ],
+    "1288": [
+      "7473138"
+    ],
+    "1289": [
+      "7464591"
+    ],
+    "1049872": [
+      "2424083"
+    ],
+    "1049894": [
+      "22297"
+    ],
+    "787751": [
+      "7809224"
+    ],
+    "1049909": [
+      "7806321"
+    ],
+    "1049918": [
+      "7185521"
+    ],
+    "1049920": [
+      "7185508"
+    ],
+    "787784": [
+      "7724077"
+    ],
+    "525643": [
+      "7525769"
+    ],
+    "1049934": [
+      "7185473"
+    ],
+    "1049939": [
+      "7744096"
+    ],
+    "263516": [
+      "170661"
+    ],
+    "1049951": [
+      "7185455"
+    ],
+    "1049955": [
+      "7185448"
+    ],
+    "1049959": [
+      "7185431"
+    ],
+    "1049960": [
+      "7185425"
+    ],
+    "1049965": [
+      "7766684"
+    ],
+    "464391": [
+      "7619062"
+    ],
+    "1038802": [
+      "7967990"
+    ],
+    "263539": [
+      "7480179"
+    ],
+    "787830": [
+      "7726447"
+    ],
+    "1049983": [
+      "5178503"
+    ],
+    "1049984": [
+      "7185377"
+    ],
+    "1049985": [
+      "7185364"
+    ],
+    "1049986": [
+      "7185350"
+    ],
+    "525699": [
+      "7457606"
+    ],
+    "1049988": [
+      "7185344"
+    ],
+    "1049989": [
+      "7185338"
+    ],
+    "787847": [
+      "7864914"
+    ],
+    "1049992": [
+      "7185325"
+    ],
+    "787849": [
+      "7746372"
+    ],
+    "1424": [
+      "7330293"
+    ],
+    "1092504": [
+      "7824933"
+    ],
+    "787862": [
+      "6190720"
+    ],
+    "1050007": [
+      "7826444"
+    ],
+    "525723": [
+      "7503703"
+    ],
+    "1050014": [
+      "7185304"
+    ],
+    "1050015": [
+      "7185300"
+    ],
+    "1050019": [
+      "7185285"
+    ],
+    "1050020": [
+      "7185274"
+    ],
+    "1050021": [
+      "7185252"
+    ],
+    "525734": [
+      "7687741"
+    ],
+    "525745": [
+      "5908173"
+    ],
+    "1050035": [
+      "4849755"
+    ],
+    "525770": [
+      "7426591"
+    ],
+    "525779": [
+      "7706458"
+    ],
+    "1050070": [
+      "7910615"
+    ],
+    "787928": [
+      "7926635"
+    ],
+    "262396": [
+      "7367755"
+    ],
+    "525811": [
+      "7573758",
+      "7573759"
+    ],
+    "263668": [
+      "7563844"
+    ],
+    "263670": [
+      "7592553"
+    ],
+    "787959": [
+      "7839497"
+    ],
+    "1050107": [
+      "7185200"
+    ],
+    "1050110": [
+      "7755578"
+    ],
+    "1050115": [
+      "7886927"
+    ],
+    "1047536": [
+      "7891773"
+    ],
+    "811852": [
+      "7941856"
+    ],
+    "785665": [
+      "5128767"
+    ],
+    "1550": [
+      "7319637"
+    ],
+    "1050144": [
+      "7971705"
+    ],
+    "1050149": [
+      "7185177"
+    ],
+    "1576": [
+      "7668392"
+    ],
+    "1579": [
+      "7333735",
+      "7333738"
+    ],
+    "525868": [
+      "7633123"
+    ],
+    "349789": [
+      "7858289"
+    ],
+    "1050170": [
+      "7185168"
+    ],
+    "1050171": [
+      "7185142"
+    ],
+    "1050172": [
+      "7823336"
+    ],
+    "1050178": [
+      "7776569"
+    ],
+    "1050180": [
+      "7766494"
+    ],
+    "43958": [
+      "7769120"
+    ],
+    "1050184": [
+      "7758781"
+    ],
+    "788042": [
+      "7766884"
+    ],
+    "1050189": [
+      "7843830"
+    ],
+    "1050190": [
+      "7811485"
+    ],
+    "262413": [
+      "7379573"
+    ],
+    "306105": [
+      "7377517"
+    ],
+    "525923": [
+      "7645222"
+    ],
+    "1050212": [
+      "7949132"
+    ],
+    "1050224": [
+      "7758970"
+    ],
+    "1050231": [
+      "7185139"
+    ],
+    "1050236": [
+      "7185130"
+    ],
+    "525955": [
+      "7516298"
+    ],
+    "768211": [
+      "7977009"
+    ],
+    "263815": [
+      "268495"
+    ],
+    "1050249": [
+      "7890199"
+    ],
+    "263818": [
+      "7981010"
+    ],
+    "1050253": [
+      "3255432"
+    ],
+    "1050254": [
+      "7935659"
+    ],
+    "525968": [
+      "7555441"
+    ],
+    "263825": [
+      "1247866"
+    ],
+    "788121": [
+      "7901437"
+    ],
+    "1050267": [
+      "7185107"
+    ],
+    "1697": [
+      "7391210"
+    ],
+    "1050275": [
+      "7185091"
+    ],
+    "263851": [
+      "7902531"
+    ],
+    "1066693": [
+      "7886139"
+    ],
+    "480154": [
+      "7529229"
+    ],
+    "1724": [
+      "7714900"
+    ],
+    "526013": [
+      "7638663"
+    ],
+    "526021": [
+      "1077002"
+    ],
+    "61161": [
+      "6316645",
+      "7991503"
+    ],
+    "1050318": [
+      "7185082"
+    ],
+    "263889": [
+      "7457216"
+    ],
+    "263891": [
+      "1330424"
+    ],
+    "263902": [
+      "35887"
+    ],
+    "788193": [
+      "7796280"
+    ],
+    "1050342": [
+      "7788744"
+    ],
+    "526056": [
+      "7673166"
+    ],
+    "263913": [
+      "7071009"
+    ],
+    "263917": [
+      "5829931"
+    ],
+    "1050351": [
+      "7185076"
+    ],
+    "1050352": [
+      "7185064"
+    ],
+    "1050353": [
+      "7185054"
+    ],
+    "1050354": [
+      "7185043"
+    ],
+    "1050363": [
+      "7185024"
+    ],
+    "1050381": [
+      "925798"
+    ],
+    "1050383": [
+      "7900170"
+    ],
+    "788246": [
+      "7809425"
+    ],
+    "1819": [
+      "7611555"
+    ],
+    "43994": [
+      "6496621"
+    ],
+    "788255": [
+      "7951943"
+    ],
+    "1050404": [
+      "7184921"
+    ],
+    "1050409": [
+      "4785540"
+    ],
+    "1050410": [
+      "7184894"
+    ],
+    "1050417": [
+      "7184869"
+    ],
+    "788275": [
+      "7849713"
+    ],
+    "1050420": [
+      "7184867"
+    ],
+    "263994": [
+      "7344769"
+    ],
+    "526141": [
+      "4938301"
+    ],
+    "1050432": [
+      "7184857"
+    ],
+    "306144": [
+      "7750488"
+    ],
+    "1050440": [
+      "7951438"
+    ],
+    "788299": [
+      "7867133"
+    ],
+    "1050448": [
+      "7912761"
+    ],
+    "526179": [
+      "5136138"
+    ],
+    "1091193": [
+      "7934692"
+    ],
+    "788331": [
+      "7920984"
+    ],
+    "1050482": [
+      "7864942"
+    ],
+    "788345": [
+      "7892510"
+    ],
+    "264065": [
+      "7376029"
+    ],
+    "1050503": [
+      "7958352"
+    ],
+    "526219": [
+      "7530269"
+    ],
+    "1050509": [
+      "7184832",
+      "7184833"
+    ],
+    "1050510": [
+      "4869935"
+    ],
+    "393540": [
+      "7672918"
+    ],
+    "1956": [
+      "7427569"
+    ],
+    "830449": [
+      "2895176"
+    ],
+    "788392": [
+      "7735534"
+    ],
+    "788396": [
+      "7787045"
+    ],
+    "526262": [
+      "7409644"
+    ],
+    "1050559": [
+      "7184803"
+    ],
+    "1050567": [
+      "7804463"
+    ],
+    "1993": [
+      "7388649"
+    ],
+    "1050572": [
+      "7184781"
+    ],
+    "264141": [
+      "3039982"
+    ],
+    "788431": [
+      "7865636"
+    ],
+    "314312": [
+      "2653306"
+    ],
+    "264150": [
+      "7383302"
+    ],
+    "1050586": [
+      "7184770",
+      "7184771"
+    ],
+    "786767": [
+      "7879675"
+    ],
+    "1050590": [
+      "7184761"
+    ],
+    "1091197": [
+      "7934279"
+    ],
+    "526306": [
+      "7660656",
+      "7660659"
+    ],
+    "788452": [
+      "7781887"
+    ],
+    "1050597": [
+      "7184749",
+      "7184755",
+      "7184756"
+    ],
+    "568316": [
+      "7495493"
+    ],
+    "788462": [
+      "7914067"
+    ],
+    "830461": [
+      "3232957"
+    ],
+    "788467": [
+      "7666404"
+    ],
+    "788468": [
+      "7555122"
+    ],
+    "526331": [
+      "580824"
+    ],
+    "1092608": [
+      "7816463"
+    ],
+    "526338": [
+      "6439731"
+    ],
+    "788484": [
+      "7963717"
+    ],
+    "2057": [
+      "7372231",
+      "7372235"
+    ],
+    "314314": [
+      "7983488"
+    ],
+    "1048922": [
+      "7795356"
+    ],
+    "264229": [
+      "6027989"
+    ],
+    "1050669": [
+      "7184729"
+    ],
+    "1050670": [
+      "7939566",
+      "7939573"
+    ],
+    "264239": [
+      "7851443"
+    ],
+    "264243": [
+      "7856408"
+    ],
+    "1050679": [
+      "7727502"
+    ],
+    "1050691": [
+      "7184684"
+    ],
+    "788549": [
+      "7910345"
+    ],
+    "1050694": [
+      "7184663"
+    ],
+    "1050695": [
+      "7184656"
+    ],
+    "1050697": [
+      "7184649"
+    ],
+    "2123": [
+      "5624942"
+    ],
+    "1050705": [
+      "7837868"
+    ],
+    "1050707": [
+      "7779323"
+    ],
+    "1050708": [
+      "7184636"
+    ],
+    "264277": [
+      "7883262"
+    ],
+    "264284": [
+      "5471184"
+    ],
+    "1050718": [
+      "7184624"
+    ],
+    "524645": [
+      "7417264"
+    ],
+    "1050724": [
+      "7979257"
+    ],
+    "699409": [
+      "7471761"
+    ],
+    "1050728": [
+      "1646957"
+    ],
+    "1050730": [
+      "7184613"
+    ],
+    "1050733": [
+      "7184592"
+    ],
+    "1050739": [
+      "7830244"
+    ],
+    "1050742": [
+      "7184568"
+    ],
+    "1050743": [
+      "7184566"
+    ],
+    "1050747": [
+      "7831366"
+    ],
+    "1048939": [
+      "7897637"
+    ],
+    "1005249": [
+      "7965196"
+    ],
+    "1050775": [
+      "7841346"
+    ],
+    "1050778": [
+      "7184530"
+    ],
+    "1050779": [
+      "7184527"
+    ],
+    "264349": [
+      "7329071"
+    ],
+    "1050786": [
+      "7184506"
+    ],
+    "1050787": [
+      "7184484"
+    ],
+    "526506": [
+      "7481205"
+    ],
+    "1050796": [
+      "7944999"
+    ],
+    "1050803": [
+      "7184443"
+    ],
+    "1050805": [
+      "7184438"
+    ],
+    "2235": [
+      "7609417"
+    ],
+    "1050812": [
+      "7184427"
+    ],
+    "526530": [
+      "7415002"
+    ],
+    "1050820": [
+      "7897478"
+    ],
+    "655734": [
+      "7597206",
+      "7597208"
+    ],
+    "788682": [
+      "7774522"
+    ],
+    "1050830": [
+      "7184403"
+    ],
+    "1050832": [
+      "7184367"
+    ],
+    "1050833": [
+      "7184357"
+    ],
+    "1050835": [
+      "7184340"
+    ],
+    "1050836": [
+      "7184328"
+    ],
+    "1050837": [
+      "934759"
+    ],
+    "830500": [
+      "6375573"
+    ],
+    "264410": [
+      "7367042"
+    ],
+    "1050844": [
+      "7184316"
+    ],
+    "788702": [
+      "7776257"
+    ],
+    "788703": [
+      "7970049"
+    ],
+    "264422": [
+      "7381271"
+    ],
+    "1050857": [
+      "5269929"
+    ],
+    "1050863": [
+      "7184301"
+    ],
+    "306217": [
+      "5741568"
+    ],
+    "1050874": [
+      "7184269"
+    ],
+    "740919": [
+      "7422402"
+    ],
+    "264445": [
+      "7989529"
+    ],
+    "526591": [
+      "7536236",
+      "7536240",
+      "7536241"
+    ],
+    "437291": [
+      "7679571"
+    ],
+    "1050893": [
+      "7184248"
+    ],
+    "2322": [
+      "7394909"
+    ],
+    "43997": [
+      "8008846"
+    ],
+    "264468": [
+      "7893767"
+    ],
+    "1050903": [
+      "7825534"
+    ],
+    "1050905": [
+      "7721907",
+      "7721911"
+    ],
+    "942814": [
+      "7934389"
+    ],
+    "1091208": [
+      "7933158"
+    ],
+    "1050923": [
+      "7184191"
+    ],
+    "526637": [
+      "3460889",
+      "7602919"
+    ],
+    "1050936": [
+      "7184181"
+    ],
+    "1050953": [
+      "7946872"
+    ],
+    "526671": [
+      "2294786"
+    ],
+    "1050961": [
+      "7184168"
+    ],
+    "1050976": [
+      "7752001"
+    ],
+    "1050979": [
+      "7184159"
+    ],
+    "1050985": [
+      "7184148"
+    ],
+    "1005287": [
+      "7254813"
+    ],
+    "1050990": [
+      "7725656"
+    ],
+    "1050991": [
+      "7184109"
+    ],
+    "788851": [
+      "7774972"
+    ],
+    "2423": [
+      "8004512"
+    ],
+    "830527": [
+      "6889951"
+    ],
+    "1051013": [
+      "7184066"
+    ],
+    "1051015": [
+      "7184051",
+      "7184058"
+    ],
+    "788875": [
+      "7955575"
+    ],
+    "1051020": [
+      "3438476"
+    ],
+    "264593": [
+      "7455534"
+    ],
+    "264594": [
+      "7320812"
+    ],
+    "830531": [
+      "7890019"
+    ],
+    "1051029": [
+      "7821507"
+    ],
+    "1051033": [
+      "7976117"
+    ],
+    "1051044": [
+      "7184019"
+    ],
+    "1051048": [
+      "7930280"
+    ],
+    "1051052": [
+      "7764837"
+    ],
+    "788923": [
+      "7856866"
+    ],
+    "788930": [
+      "7904877"
+    ],
+    "1051078": [
+      "7183964"
+    ],
+    "1051079": [
+      "7183956"
+    ],
+    "1092686": [
+      "7811008"
+    ],
+    "526806": [
+      "4743281"
+    ],
+    "1051095": [
+      "7911726"
+    ],
+    "1051096": [
+      "7183946"
+    ],
+    "526809": [
+      "7305254"
+    ],
+    "1051108": [
+      "7183936"
+    ],
+    "1051109": [
+      "7183927"
+    ],
+    "1051110": [
+      "7183918"
+    ],
+    "1051111": [
+      "7183913"
+    ],
+    "1051112": [
+      "7183892"
+    ],
+    "1051113": [
+      "7183876"
+    ],
+    "1051115": [
+      "7179720"
+    ],
+    "1051116": [
+      "7183848"
+    ],
+    "788983": [
+      "7852343"
+    ],
+    "526840": [
+      "7558239"
+    ],
+    "881718": [
+      "7959065"
+    ],
+    "1051133": [
+      "7742373"
+    ],
+    "1051134": [
+      "7183828"
+    ],
+    "1051135": [
+      "7183821"
+    ],
+    "1051138": [
+      "7183806"
+    ],
+    "1051139": [
+      "7183773"
+    ],
+    "1051140": [
+      "4762550"
+    ],
+    "1051142": [
+      "7183762"
+    ],
+    "2569": [
+      "7996518"
+    ],
+    "218882": [
+      "8003796"
+    ],
+    "1051176": [
+      "7879771"
+    ],
+    "1051179": [
+      "7806510"
+    ],
+    "789037": [
+      "7810187"
+    ],
+    "789042": [
+      "7921777"
+    ],
+    "2619": [
+      "7334057"
+    ],
+    "1051196": [
+      "7877626"
+    ],
+    "1051198": [
+      "7763115"
+    ],
+    "1051207": [
+      "7813296"
+    ],
+    "1051211": [
+      "7183753"
+    ],
+    "1051212": [
+      "3154094"
+    ],
+    "1051214": [
+      "1590950"
+    ],
+    "1051223": [
+      "7183716"
+    ],
+    "264793": [
+      "7375361"
+    ],
+    "1051226": [
+      "7183709"
+    ],
+    "1051229": [
+      "7183698"
+    ],
+    "1051232": [
+      "7755993"
+    ],
+    "1051234": [
+      "2277730"
+    ],
+    "264803": [
+      "7355865"
+    ],
+    "789092": [
+      "7737815"
+    ],
+    "393662": [
+      "7681565"
+    ],
+    "1051256": [
+      "7183664"
+    ],
+    "1051257": [
+      "7183652"
+    ],
+    "264827": [
+      "7071066"
+    ],
+    "526972": [
+      "7403542"
+    ],
+    "264835": [
+      "7067960"
+    ],
+    "1051270": [
+      "7785389"
+    ],
+    "526984": [
+      "7630382"
+    ],
+    "1051279": [
+      "7183615"
+    ],
+    "1051281": [
+      "7183610"
+    ],
+    "1051285": [
+      "7183600"
+    ],
+    "1051287": [
+      "7183585"
+    ],
+    "1051288": [
+      "7183567"
+    ],
+    "2716": [
+      "7806467"
+    ],
+    "527009": [
+      "7665967",
+      "7665968"
+    ],
+    "527013": [
+      "7568627"
+    ],
+    "1051307": [
+      "7183532"
+    ],
+    "264879": [
+      "7723021"
+    ],
+    "1051317": [
+      "7183523"
+    ],
+    "1051322": [
+      "7937384"
+    ],
+    "1051327": [
+      "7183509"
+    ],
+    "1051329": [
+      "7183489"
+    ],
+    "1051330": [
+      "7183484"
+    ],
+    "1051333": [
+      "7183456"
+    ],
+    "1051339": [
+      "7183442"
+    ],
+    "1051341": [
+      "7183438"
+    ],
+    "264910": [
+      "2205059"
+    ],
+    "1051344": [
+      "7183427"
+    ],
+    "1051352": [
+      "7183414"
+    ],
+    "1051354": [
+      "7183383"
+    ],
+    "789212": [
+      "7751563"
+    ],
+    "1051362": [
+      "7183380"
+    ],
+    "1051364": [
+      "7767676"
+    ],
+    "261964": [
+      "7349536"
+    ],
+    "1051372": [
+      "7183368"
+    ],
+    "2798": [
+      "7800991"
+    ],
+    "1051376": [
+      "7183327"
+    ],
+    "789239": [
+      "7857367"
+    ],
+    "527111": [
+      "7439059",
+      "81598"
+    ],
+    "1051401": [
+      "7183312"
+    ],
+    "527114": [
+      "7522387"
+    ],
+    "1051405": [
+      "7183286"
+    ],
+    "1051406": [
+      "597801"
+    ],
+    "527121": [
+      "7688940"
+    ],
+    "527124": [
+      "3537057"
+    ],
+    "527125": [
+      "4434511"
+    ],
+    "1051414": [
+      "7183271"
+    ],
+    "1051420": [
+      "7183237"
+    ],
+    "1051422": [
+      "7183229"
+    ],
+    "1051426": [
+      "7183216"
+    ],
+    "1051433": [
+      "7837974"
+    ],
+    "789292": [
+      "7842289"
+    ],
+    "265011": [
+      "2084019"
+    ],
+    "527158": [
+      "2438957",
+      "553068",
+      "7453231"
+    ],
+    "1051448": [
+      "7183186"
+    ],
+    "1051454": [
+      "7183175"
+    ],
+    "527171": [
+      "7529737"
+    ],
+    "1051462": [
+      "7828883"
+    ],
+    "527176": [
+      "7404576",
+      "7404579"
+    ],
+    "527179": [
+      "7611529"
+    ],
+    "1051475": [
+      "7183163",
+      "7183167"
+    ],
+    "789332": [
+      "5553013"
+    ],
+    "1051479": [
+      "2210436"
+    ],
+    "1051489": [
+      "7966622"
+    ],
+    "1051491": [
+      "7183138"
+    ],
+    "1051495": [
+      "7183120"
+    ],
+    "1051504": [
+      "7854997"
+    ],
+    "1051509": [
+      "7805643"
+    ],
+    "1051520": [
+      "1782428"
+    ],
+    "1051521": [
+      "7183091"
+    ],
+    "1051522": [
+      "7183076"
+    ],
+    "1051523": [
+      "7183068"
+    ],
+    "265096": [
+      "8007729"
+    ],
+    "1051530": [
+      "7183057"
+    ],
+    "1051537": [
+      "7183052"
+    ],
+    "2962": [
+      "658625",
+      "7314664"
+    ],
+    "1051539": [
+      "7958205"
+    ],
+    "1051543": [
+      "7183013"
+    ],
+    "1051544": [
+      "7182995"
+    ],
+    "1051546": [
+      "7904950"
+    ],
+    "1051551": [
+      "7182960"
+    ],
+    "1051552": [
+      "7182952"
+    ],
+    "1051553": [
+      "7182945"
+    ],
+    "1051554": [
+      "7182934"
+    ],
+    "1051555": [
+      "7182925"
+    ],
+    "1051559": [
+      "7813643"
+    ],
+    "1051569": [
+      "7182874"
+    ],
+    "1051571": [
+      "5049881"
+    ],
+    "1051580": [
+      "7182841"
+    ],
+    "527293": [
+      "7412621"
+    ],
+    "1051583": [
+      "7182838"
+    ],
+    "1051584": [
+      "1490402"
+    ],
+    "265160": [
+      "7817077"
+    ],
+    "1051593": [
+      "7182798"
+    ],
+    "1049079": [
+      "7833823"
+    ],
+    "1051599": [
+      "7182782"
+    ],
+    "1051603": [
+      "7182769"
+    ],
+    "527318": [
+      "7406156"
+    ],
+    "1051610": [
+      "7182751"
+    ],
+    "1051611": [
+      "7182741"
+    ],
+    "1051612": [
+      "7182736"
+    ],
+    "1051613": [
+      "7182729"
+    ],
+    "1092773": [
+      "7804499"
+    ],
+    "1051616": [
+      "142704"
+    ],
+    "1051617": [
+      "7182686"
+    ],
+    "265189": [
+      "7492451"
+    ],
+    "3053": [
+      "7352517",
+      "7352518"
+    ],
+    "1051631": [
+      "7182656"
+    ],
+    "1051635": [
+      "7182646",
+      "7182650"
+    ],
+    "789493": [
+      "7727715"
+    ],
+    "961705": [
+      "7915039"
+    ],
+    "1051643": [
+      "7182631"
+    ],
+    "1051646": [
+      "7182618"
+    ],
+    "1051651": [
+      "7182582"
+    ],
+    "1051652": [
+      "7182573"
+    ],
+    "1051653": [
+      "7182565"
+    ],
+    "1051654": [
+      "7182558"
+    ],
+    "1051655": [
+      "7182549"
+    ],
+    "1051656": [
+      "7182541"
+    ],
+    "786946": [
+      "7841338"
+    ],
+    "1051662": [
+      "7182526"
+    ],
+    "1051670": [
+      "7866744"
+    ],
+    "1051675": [
+      "7182499"
+    ],
+    "1051676": [
+      "7182489"
+    ],
+    "1038859": [
+      "7203676"
+    ],
+    "1051688": [
+      "7182460",
+      "7182466"
+    ],
+    "789557": [
+      "7854955"
+    ],
+    "789558": [
+      "7970762"
+    ],
+    "1091234": [
+      "7930804"
+    ],
+    "1051704": [
+      "7182442"
+    ],
+    "1051705": [
+      "7182432"
+    ],
+    "1051710": [
+      "4144904"
+    ],
+    "1051723": [
+      "7182394"
+    ],
+    "3151": [
+      "7325296"
+    ],
+    "1051732": [
+      "7182386"
+    ],
+    "1051733": [
+      "7182370"
+    ],
+    "1051735": [
+      "7810580"
+    ],
+    "265304": [
+      "7485479"
+    ],
+    "1051738": [
+      "7182356"
+    ],
+    "1051755": [
+      "7928929"
+    ],
+    "918036": [
+      "7797459"
+    ],
+    "1051774": [
+      "7837094"
+    ],
+    "789640": [
+      "7777718"
+    ],
+    "1051786": [
+      "7182333"
+    ],
+    "1051791": [
+      "7892755"
+    ],
+    "1051796": [
+      "7182313"
+    ],
+    "789658": [
+      "7858297"
+    ],
+    "1051804": [
+      "7182302"
+    ],
+    "1051808": [
+      "7182286"
+    ],
+    "265378": [
+      "7454506"
+    ],
+    "789670": [
+      "7919540"
+    ],
+    "789675": [
+      "1765448",
+      "7935369"
+    ],
+    "1051825": [
+      "7182262"
+    ],
+    "175306": [
+      "7394656"
+    ],
+    "1051840": [
+      "7182228"
+    ],
+    "1051841": [
+      "7182214"
+    ],
+    "3267": [
+      "7901857",
+      "7901858",
+      "7901862"
+    ],
+    "3268": [
+      "7312881"
+    ],
+    "1051847": [
+      "7848669"
+    ],
+    "527568": [
+      "7503570"
+    ],
+    "1092814": [
+      "7801294"
+    ],
+    "1051866": [
+      "7821213"
+    ],
+    "1051867": [
+      "6902153"
+    ],
+    "1051871": [
+      "7915585"
+    ],
+    "527585": [
+      "7686402",
+      "7686403"
+    ],
+    "265442": [
+      "7560133"
+    ],
+    "1051877": [
+      "7949272"
+    ],
+    "1051878": [
+      "7182193"
+    ],
+    "1091240": [
+      "7930409"
+    ],
+    "1051886": [
+      "7744645"
+    ],
+    "1051890": [
+      "7852080"
+    ],
+    "527604": [
+      "7502321"
+    ],
+    "1051899": [
+      "7182184"
+    ],
+    "1051902": [
+      "7182169"
+    ],
+    "1051903": [
+      "7182155"
+    ],
+    "1051907": [
+      "7182147"
+    ],
+    "1051911": [
+      "7864477"
+    ],
+    "527625": [
+      "7586017"
+    ],
+    "1051914": [
+      "7182145"
+    ],
+    "1051920": [
+      "7182108"
+    ],
+    "830680": [
+      "7936999"
+    ],
+    "789792": [
+      "7718679"
+    ],
+    "265507": [
+      "7362733"
+    ],
+    "1051942": [
+      "7182094"
+    ],
+    "1051943": [
+      "7182080"
+    ],
+    "1051950": [
+      "7873633"
+    ],
+    "1051955": [
+      "3194977"
+    ],
+    "3387": [
+      "7594369"
+    ],
+    "789833": [
+      "7786299"
+    ],
+    "1051989": [
+      "7844657"
+    ],
+    "265558": [
+      "7899132"
+    ],
+    "568549": [
+      "1053130"
+    ],
+    "1052016": [
+      "7182068"
+    ],
+    "527730": [
+      "1530868",
+      "7413620"
+    ],
+    "1052019": [
+      "7182043"
+    ],
+    "1052049": [
+      "7182033"
+    ],
+    "527769": [
+      "7708458",
+      "7708460"
+    ],
+    "1052058": [
+      "7815595"
+    ],
+    "1052059": [
+      "7182031"
+    ],
+    "787014": [
+      "7758887"
+    ],
+    "3495": [
+      "7357240"
+    ],
+    "1052087": [
+      "7182006"
+    ],
+    "1052088": [
+      "7181998"
+    ],
+    "1052094": [
+      "7181979"
+    ],
+    "789961": [
+      "5986843"
+    ],
+    "527820": [
+      "7563690",
+      "7563692"
+    ],
+    "1052111": [
+      "7908007"
+    ],
+    "1052113": [
+      "7181926"
+    ],
+    "1052115": [
+      "7181909"
+    ],
+    "1052118": [
+      "7181885"
+    ],
+    "1092857": [
+      "2962966"
+    ],
+    "1052124": [
+      "7849934"
+    ],
+    "1052127": [
+      "7181878"
+    ],
+    "527842": [
+      "7662340"
+    ],
+    "789988": [
+      "7976354"
+    ],
+    "527853": [
+      "4262196"
+    ],
+    "961789": [
+      "7966729"
+    ],
+    "1052146": [
+      "7181862"
+    ],
+    "265717": [
+      "8003600"
+    ],
+    "265729": [
+      "7369987"
+    ],
+    "1052163": [
+      "7791864"
+    ],
+    "1052167": [
+      "7181855"
+    ],
+    "1052169": [
+      "7181839"
+    ],
+    "699651": [
+      "7616838"
+    ],
+    "1052181": [
+      "7181808"
+    ],
+    "961796": [
+      "7896272"
+    ],
+    "790042": [
+      "7939442"
+    ],
+    "1052193": [
+      "7181768"
+    ],
+    "1052194": [
+      "7181762"
+    ],
+    "1052195": [
+      "7181748"
+    ],
+    "1052196": [
+      "218726"
+    ],
+    "1052202": [
+      "7181729"
+    ],
+    "790059": [
+      "6955954"
+    ],
+    "527916": [
+      "7496044",
+      "7496046"
+    ],
+    "1030723": [
+      "7216914"
+    ],
+    "1052214": [
+      "7181703"
+    ],
+    "1052218": [
+      "7181691"
+    ],
+    "790079": [
+      "5909139"
+    ],
+    "1052224": [
+      "4761081"
+    ],
+    "1052229": [
+      "7181654"
+    ],
+    "1052231": [
+      "7181641"
+    ],
+    "790088": [
+      "92933"
+    ],
+    "1052236": [
+      "7181609"
+    ],
+    "790094": [
+      "7896054"
+    ],
+    "830733": [
+      "4167720"
+    ],
+    "790100": [
+      "7912371"
+    ],
+    "265816": [
+      "7447662"
+    ],
+    "1052251": [
+      "7181573"
+    ],
+    "1052252": [
+      "7181566"
+    ],
+    "1052254": [
+      "1892033"
+    ],
+    "1052255": [
+      "7181549"
+    ],
+    "1052272": [
+      "7181534"
+    ],
+    "1052274": [
+      "7181518"
+    ],
+    "1052275": [
+      "7181505"
+    ],
+    "1052277": [
+      "7181473"
+    ],
+    "527992": [
+      "7466689",
+      "7466694"
+    ],
+    "265864": [
+      "7469571"
+    ],
+    "790153": [
+      "7872090"
+    ],
+    "3722": [
+      "458782"
+    ],
+    "1052301": [
+      "7181467"
+    ],
+    "1052303": [
+      "7870973"
+    ],
+    "1052309": [
+      "7954231"
+    ],
+    "1052310": [
+      "7181456"
+    ],
+    "1052311": [
+      "7181445"
+    ],
+    "1052313": [
+      "2753170"
+    ],
+    "790178": [
+      "7946325"
+    ],
+    "265891": [
+      "7605737"
+    ],
+    "1052330": [
+      "7181418"
+    ],
+    "1052335": [
+      "7181402"
+    ],
+    "262771": [
+      "7862471"
+    ],
+    "1052342": [
+      "7816536"
+    ],
+    "1052343": [
+      "2549353"
+    ],
+    "1052345": [
+      "7882001"
+    ],
+    "1052347": [
+      "92976"
+    ],
+    "1052350": [
+      "7931559"
+    ],
+    "790212": [
+      "7834284"
+    ],
+    "655990": [
+      "1006621"
+    ],
+    "1052363": [
+      "256757"
+    ],
+    "1052366": [
+      "7181384"
+    ],
+    "528086": [
+      "7587224"
+    ],
+    "1052377": [
+      "1435529",
+      "7887675"
+    ],
+    "790234": [
+      "7960145"
+    ],
+    "1052382": [
+      "7181356"
+    ],
+    "1052388": [
+      "7762300"
+    ],
+    "265960": [
+      "7324982"
+    ],
+    "1052396": [
+      "7845575"
+    ],
+    "1052399": [
+      "7181330"
+    ],
+    "1052401": [
+      "7181321"
+    ],
+    "528117": [
+      "7642185"
+    ],
+    "265975": [
+      "7368213"
+    ],
+    "1052408": [
+      "7810367"
+    ],
+    "265982": [
+      "7356620"
+    ],
+    "1052415": [
+      "7181287"
+    ],
+    "1052421": [
+      "7889259"
+    ],
+    "1052427": [
+      "7919722"
+    ],
+    "838116": [
+      "7951555"
+    ],
+    "1052430": [
+      "7181273"
+    ],
+    "790288": [
+      "7900737"
+    ],
+    "528145": [
+      "7514718"
+    ],
+    "1052438": [
+      "7181243"
+    ],
+    "1052440": [
+      "7181232"
+    ],
+    "528155": [
+      "7707643"
+    ],
+    "266032": [
+      "7854511"
+    ],
+    "266036": [
+      "7367801"
+    ],
+    "790330": [
+      "7844252"
+    ],
+    "1052476": [
+      "7181215"
+    ],
+    "1052486": [
+      "7181201"
+    ],
+    "1049228": [
+      "7757810"
+    ],
+    "306488": [
+      "7917269"
+    ],
+    "3934": [
+      "7073454"
+    ],
+    "1052519": [
+      "7973594"
+    ],
+    "266088": [
+      "7366865"
+    ],
+    "1052524": [
+      "7818963"
+    ],
+    "1052527": [
+      "7181184"
+    ],
+    "1052528": [
+      "7181171"
+    ],
+    "1092926": [
+      "7792852"
+    ],
+    "266102": [
+      "7636412"
+    ],
+    "1052537": [
+      "7835218"
+    ],
+    "1052538": [
+      "7753574"
+    ],
+    "1052548": [
+      "7742852"
+    ],
+    "1005548": [
+      "7902936"
+    ],
+    "1052554": [
+      "7954629"
+    ],
+    "1052557": [
+      "7181141"
+    ],
+    "1052563": [
+      "2882149"
+    ],
+    "528278": [
+      "7552777",
+      "7552778"
+    ],
+    "1052579": [
+      "7181123",
+      "7181127"
+    ],
+    "1052580": [
+      "3655603"
+    ],
+    "1052585": [
+      "7181095"
+    ],
+    "1092936": [
+      "7792349"
+    ],
+    "266163": [
+      "2993199"
+    ],
+    "1052598": [
+      "7181079"
+    ],
+    "1052599": [
+      "7181072"
+    ],
+    "4024": [
+      "7982074"
+    ],
+    "1091264": [
+      "7928349"
+    ],
+    "266177": [
+      "7302309"
+    ],
+    "528323": [
+      "7664768"
+    ],
+    "1052614": [
+      "7181058"
+    ],
+    "1052615": [
+      "7181049"
+    ],
+    "1052620": [
+      "7181025"
+    ],
+    "1052627": [
+      "7798251"
+    ],
+    "1052628": [
+      "7807475"
+    ],
+    "1052631": [
+      "7181015"
+    ],
+    "1052632": [
+      "7181006"
+    ],
+    "1091265": [
+      "7928248"
+    ],
+    "790491": [
+      "7897427"
+    ],
+    "528348": [
+      "7705565"
+    ],
+    "1052640": [
+      "7180994"
+    ],
+    "790498": [
+      "7877882"
+    ],
+    "1052646": [
+      "7180969"
+    ],
+    "266216": [
+      "7365259"
+    ],
+    "528362": [
+      "7417500"
+    ],
+    "1052672": [
+      "7180957"
+    ],
+    "1052673": [
+      "7180953"
+    ],
+    "1052674": [
+      "7180944"
+    ],
+    "528395": [
+      "3722972",
+      "7675988",
+      "7675989"
+    ],
+    "1052689": [
+      "7180910"
+    ],
+    "1052690": [
+      "7180900"
+    ],
+    "528407": [
+      "7486477"
+    ],
+    "266264": [
+      "7067759"
+    ],
+    "1052704": [
+      "7180870"
+    ],
+    "830812": [
+      "7970442"
+    ],
+    "1052717": [
+      "7819204"
+    ],
+    "1052721": [
+      "7180843"
+    ],
+    "4156": [
+      "1378673"
+    ],
+    "1052734": [
+      "7180828"
+    ],
+    "790592": [
+      "7839485"
+    ],
+    "1092960": [
+      "7790087"
+    ],
+    "331842": [
+      "104421"
+    ],
+    "266309": [
+      "390435",
+      "7767333"
+    ],
+    "790598": [
+      "7902421"
+    ],
+    "1052752": [
+      "7180777"
+    ],
+    "1052755": [
+      "7180774"
+    ],
+    "612366": [
+      "7410608"
+    ],
+    "262841": [
+      "8006323"
+    ]
+  }
+}

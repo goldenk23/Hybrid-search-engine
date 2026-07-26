@@ -4,6 +4,7 @@ Hermetic tests for reciprocal_rank_fusion().
 All expected values computed by hand — no real indexes, no models.
 """
 import pytest
+
 from src.search.fusion import reciprocal_rank_fusion
 
 # ------------------------------------------------------------------ helpers

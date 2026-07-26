@@ -17,7 +17,7 @@ def main() -> None:
     try:
         corrector.load_default_dictionary()
         print("✓ Dictionary loaded successfully\n")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 — test script; dictionary load errors vary by OS
         print(f"✗ Failed to load dictionary: {e}\n")
         return
 
@@ -40,7 +40,7 @@ def main() -> None:
                 print(f"✓ '{query}' → '{corrected}'")
             else:
                 print(f"  '{query}' (no correction needed)")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 — test script; corrector errors vary
             print(f"✗ Error correcting '{query}': {e}")
 
     print("-" * 60)

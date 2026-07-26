@@ -32,7 +32,7 @@ router = APIRouter(tags=["search"])
 
 # ------------------------------------------------------------------ dependency
 
-def get_services(request: Request) -> "SearchServices":
+def get_services(request: Request) -> SearchServices:
     """Extract the shared SearchServices from app.state.
 
     FastAPI calls this automatically for every route that declares it as a
@@ -47,7 +47,7 @@ def _correct(spell, query: str) -> tuple[str, str | None]:
     """Return (search_query, corrected_query_or_None)."""
     try:
         corrected = spell.correct_query(query)
-    except Exception:
+    except Exception:  # noqa: BLE001 — spell corrector may raise anything; fall back silently
         corrected = query
     if corrected and corrected != query:
         return corrected, corrected
@@ -67,7 +67,7 @@ def search(
     top_k: int = Query(default=RESULTS_PER_PAGE, ge=1, le=100),
     include_body: bool = Query(default=False,
                                description="Include full passage body in results"),
-    svc: "SearchServices" = Depends(get_services),
+    svc: SearchServices = Depends(get_services),  # noqa: B008 — FastAPI DI pattern
 ) -> SearchResponse:
     query_text  = q.strip()
     search_q, corrected = _correct(svc.spell, query_text)
@@ -106,7 +106,7 @@ def hybrid_search(
     vector_weight: float = Query(default=1.0, ge=0.0, le=100.0),
     rrf_k: int = Query(default=60, ge=1),
     include_body: bool = Query(default=False),
-    svc: "SearchServices" = Depends(get_services),
+    svc: SearchServices = Depends(get_services),  # noqa: B008 — FastAPI DI pattern
 ) -> HybridSearchResponse:
     query_text  = q.strip()
     search_q, corrected = _correct(svc.spell, query_text)
@@ -153,7 +153,7 @@ def hybrid_search_rerank(
     vector_weight: float = Query(default=1.0, ge=0.0, le=100.0),
     rrf_k: int = Query(default=60, ge=1),
     include_body: bool = Query(default=False),
-    svc: "SearchServices" = Depends(get_services),
+    svc: SearchServices = Depends(get_services),  # noqa: B008 — FastAPI DI pattern
 ) -> RerankedSearchResponse:
     # Guard: you cannot return more results than you fetched as candidates.
     if candidates_k < top_k:

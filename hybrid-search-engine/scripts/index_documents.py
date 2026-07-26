@@ -75,9 +75,9 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.indexing.pipeline import run_indexing_pipeline
-from src.indexing.checkpoint import IndexCheckpoint
 from src.config import INDEX_DIR, ensure_build_directories
+from src.indexing.checkpoint import IndexCheckpoint
+from src.indexing.pipeline import run_indexing_pipeline
 
 ensure_build_directories()
 

@@ -2,17 +2,17 @@
 BM25 keyword search using Tantivy.
 """
 
+import gc
 import re
 import time
-import gc
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
-from collections.abc import Iterable
-from src.database.docstore import SQLiteDocstore
-from src.config import BM25_INDEX_PATH, INDEX_DIR
 
 import tantivy
 
+from src.config import BM25_INDEX_PATH
+from src.database.docstore import SQLiteDocstore
 
 WRITER_HEAP_SIZE_BYTES = 64_000_000
 WRITER_NUM_THREADS = 1
@@ -221,7 +221,7 @@ class BM25Search:
                         )
                         last_document_id = str(document["id"])
                         break  # Success
-                    except ValueError as e:
+                    except ValueError:
                         if attempt < max_retries - 1:
                             gc.collect()
                             time.sleep(0.5)
@@ -270,7 +270,7 @@ class BM25Search:
                         collection_path=str(collection_path) if collection_path else "unknown",
                     )
                     print("     Checkpoint saved to metadata file")
-                    print(f"     Index and checkpoint saved")
+                    print("     Index and checkpoint saved")
                     print()
                     del writer
                     gc.collect()
@@ -323,7 +323,7 @@ class BM25Search:
                 print(f"   Partial batch committed ({count:,} documents)")
                 gc.collect()
                 time.sleep(1.0)
-            except Exception as commit_error:
+            except ValueError as commit_error:
                 print(f"   Warning: Failed to commit: {commit_error}")
             
             # Save checkpoint only if the matching index commit succeeded.
@@ -342,7 +342,7 @@ class BM25Search:
             try:
                 if 'writer' in locals():
                     del writer
-            except:
+            except Exception:  # noqa: BLE001, S110 — writer cleanup; any error is safe to ignore
                 pass
             gc.collect()
 

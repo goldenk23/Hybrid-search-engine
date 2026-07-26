@@ -88,7 +88,7 @@ def load_json_required(path: Path) -> dict:
         raise RuntimeError(f"Unreadable state file: {path}") from exc
 
     if not isinstance(value, dict):
-        raise RuntimeError(
+        raise TypeError(
             f"Expected a JSON object in {path}, got {type(value).__name__}"
         )
 

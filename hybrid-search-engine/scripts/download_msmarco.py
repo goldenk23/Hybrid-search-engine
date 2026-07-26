@@ -56,7 +56,7 @@ def download_file(url: str, output_path: Path, force: bool = False) -> bool:
         temp_path.replace(output_path)
         print(f"  OK Downloaded: {output_path.name} ({output_path.stat().st_size / 1024 / 1024:.1f} MB)")
         return True
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 — network/disk/tarfile errors; clean up and report
         if temp_path.exists():
             temp_path.unlink()
         print(f"  FAIL Failed to download {output_path.name}: {exc}")
@@ -93,7 +93,7 @@ def extract_collection(archive_path: Path, output_dir: Path, force: bool = False
     except KeyError:
         print(f"  FAIL Archive does not contain {COLLECTION_FILENAME}")
         return False
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 — tarfile/disk/OS errors; clean up and report
         if temp_path.exists():
             temp_path.unlink()
         print(f"  FAIL Failed to extract {COLLECTION_FILENAME}: {exc}")
@@ -172,7 +172,7 @@ def main() -> None:
             print(f"Collection path: {DATA_DIR / COLLECTION_FILENAME}")
         print("=" * 70)
 
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 — top-level CLI handler; any error exits cleanly
         print(f"\nFAIL Error: {exc}", file=sys.stderr)
         sys.exit(1)
 

@@ -6,10 +6,8 @@ it can resume from the last checkpoint instead of starting over.
 """
 
 import json
-import time
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 
 class IndexCheckpoint:
@@ -30,7 +28,7 @@ class IndexCheckpoint:
         total_documents_indexed: int,
         last_document_id: str,
         collection_path: str,
-        max_documents: Optional[int] = None,
+        max_documents: int | None = None,
         batch_size: int = 1000,
     ) -> None:
         """Save indexing progress to checkpoint file.
@@ -43,7 +41,7 @@ class IndexCheckpoint:
             batch_size: Documents per batch
         """
         checkpoint_data = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(tz=UTC).isoformat(),
             "total_documents_indexed": total_documents_indexed,
             "last_document_id": last_document_id,
             "collection_path": str(collection_path),
@@ -61,10 +59,10 @@ class IndexCheckpoint:
         temp_file.replace(self.checkpoint_file)
         print(
             f"  Checkpoint saved: {total_documents_indexed:,} documents "
-            f"(at {datetime.now().strftime('%H:%M:%S')})"
+            f"(at {datetime.now(tz=UTC).strftime('%H:%M:%S')} UTC)"
         )
 
-    def load_checkpoint(self) -> Optional[dict]:
+    def load_checkpoint(self) -> dict | None:
         """Load the last checkpoint if it exists.
         
         Returns:
@@ -82,7 +80,7 @@ class IndexCheckpoint:
             )
             print(f"  Last indexed at: {checkpoint['timestamp']}")
             return checkpoint
-        except (json.JSONDecodeError, IOError, KeyError) as e:
+        except (OSError, json.JSONDecodeError, KeyError) as e:
             print(f"Warning: Could not load checkpoint: {e}")
             return None
 
@@ -92,7 +90,7 @@ class IndexCheckpoint:
             self.checkpoint_file.unlink()
             print("Checkpoint cleared (indexing completed successfully)")
 
-    def get_checkpoint_status(self) -> Optional[dict]:
+    def get_checkpoint_status(self) -> dict | None:
         """Get current checkpoint status without loading it."""
         if not self.checkpoint_file.exists():
             return None
@@ -100,5 +98,5 @@ class IndexCheckpoint:
         try:
             with open(self.checkpoint_file, "r") as f:
                 return json.load(f)
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             return None

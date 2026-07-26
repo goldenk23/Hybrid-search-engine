@@ -50,9 +50,9 @@ import sqlite3
 import subprocess
 import sys
 import time
+from collections.abc import Callable
 from pathlib import Path
 from statistics import median
-from typing import Callable
 
 import faiss
 import numpy as np
@@ -63,8 +63,8 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from Benchmark.cohort import load_cohort
-from src.config import DATA_DIR, INDEX_DIR, DOCSTORE_PATH, BM25_INDEX_PATH, VECTOR_INDEX_PATH
-from src.evaluation.metrics import ndcg_at_k, mrr_at_k, recall_at_k
+from src.config import BM25_INDEX_PATH, DOCSTORE_PATH
+from src.evaluation.metrics import mrr_at_k, ndcg_at_k, recall_at_k
 from src.indexing.artifact_state import load_json_required, sha256_path, write_json_atomic
 from src.search.bm25 import BM25Search
 from src.search.cross_encoder_reranker import CrossEncoderReranker
@@ -183,7 +183,7 @@ def _git_info() -> dict:
         try:
             return subprocess.check_output(args, text=True,
                                            stderr=subprocess.DEVNULL).strip()
-        except Exception:
+        except Exception:  # noqa: BLE001 — subprocess may fail for any reason; safe default
             return "unknown"
 
     commit = _run("git", "rev-parse", "--short", "HEAD")
@@ -413,7 +413,7 @@ def _load_saved_results(output_dir: Path) -> list[dict]:
                 out.append(data)
             else:
                 print(f"Warning: skipping {p.name} — label mismatch")
-        except Exception:
+        except Exception:  # noqa: BLE001 — JSON may be malformed; skip and warn
             print(f"Warning: skipping invalid JSON: {p.name}")
     return sorted(out, key=lambda r: (r.get("corpus_size", 0), r.get("corpus_label", "")))
 

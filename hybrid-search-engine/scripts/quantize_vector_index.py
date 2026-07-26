@@ -21,7 +21,6 @@ sys.path.insert(0, str(project_root))
 
 from src.config import INDEX_DIR
 
-
 METHODS = {
     "sq8": faiss.ScalarQuantizer.QT_8bit,
     "fp16": faiss.ScalarQuantizer.QT_fp16,

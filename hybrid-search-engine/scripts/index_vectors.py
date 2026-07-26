@@ -54,14 +54,13 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from src.config import (
+    BM25_INDEX_PATH,
     DATA_DIR,
     DOCSTORE_PATH,
     EMBEDDING_MODEL_NAME,
     EMBEDDING_MODEL_REVISION,
     INDEX_DIR,
     PREPROCESSING_VERSION,
-    VECTOR_INDEX_PATH,
-    BM25_INDEX_PATH,
     ensure_build_directories,
 )
 from src.database.docstore import SQLiteDocstore
@@ -72,7 +71,6 @@ from src.indexing.artifact_state import (
     write_json_atomic,
 )
 from src.indexing.pipeline import load_msmarco_passages
-
 
 DEFAULT_INDEX_PATH = INDEX_DIR / "vector.faiss"
 DEFAULT_CHECKPOINT_PATH = INDEX_DIR / "vector_checkpoint.json"
@@ -397,7 +395,7 @@ def build_vector_index(
                 import tantivy
                 bm25_index = tantivy.Index.open(str(BM25_INDEX_PATH))
                 counts["bm25"] = bm25_index.searcher().num_docs
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 — tantivy may raise on partially built index
                 print(f"Warning: could not read BM25 count: {exc}")
 
         unique_counts = set(counts.values())

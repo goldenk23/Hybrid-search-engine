@@ -48,10 +48,7 @@ def is_valid_document(
     if require_title and (not title or not title.strip()):
         return False
 
-    if not body or len(body.strip()) < min_body_length:
-        return False
-
-    return True
+    return not (not body or len(body.strip()) < min_body_length)
 
 
 def generate_snippet(body: str, query: str, snippet_length: int = 200) -> str:

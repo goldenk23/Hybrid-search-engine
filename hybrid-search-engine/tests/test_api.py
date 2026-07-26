@@ -5,13 +5,12 @@ Tests call create_app(lambda: fake_services) so the lifespan loads fakes
 instead of real models.  Fully offline, no data/ access.
 """
 
-import pytest
 from threading import BoundedSemaphore
-from dataclasses import dataclass
+
+import pytest
 from fastapi.testclient import TestClient
 
-from src.api.main import create_app, SearchServices
-
+from src.api.main import SearchServices, create_app
 
 # ------------------------------------------------------------------ fakes
 
